@@ -3,8 +3,9 @@
 import ROOT as r
 import tool
 from operator import itemgetter
+import os
 
-psfile="/Users/zmao/M-Data/School/Brown/Work/Analysis/H->TauTau/Plots/mJJprerequire.eps"
+psfile="mJJprerequire.eps"
 
 Title = "Require "
 
@@ -100,6 +101,7 @@ c = r.TCanvas("c","Test", 800, 600)
 r.gPad.SetTickx()
 r.gPad.SetTicky()
 
+psfile = os.environ['PYPATH']+'/Plots/'+psfile
 ps = r.TPostScript(psfile,112)
 
 l1.AddEntry(h_mjj_h,"H->hh")
