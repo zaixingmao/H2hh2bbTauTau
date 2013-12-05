@@ -67,7 +67,6 @@ def addFiles(ch, dirName, ext = ".root"):
             if not AddedPercent < printTick:
                 sys.stdout.write("\rAdded: %0.f" %(round(AddedPercent,2)*100) + "%")
                 sys.stdout.flush()
-                time.sleep(1)
                 printTick += 0.2         
     print ""
     return added
