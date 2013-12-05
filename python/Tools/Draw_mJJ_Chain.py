@@ -23,14 +23,14 @@ if CSVCut1 < 0 and CSVCut2 < 0:
     psfile = psfile + "_no_b_tag.eps"
 
 r.gStyle.SetOptStat(0)
-#*******Open input file and find associated tree*******
-ifile = r.TFile("/Users/zmao/M-Data/School/Brown/Work/Analysis/H->TauTau/MC/analysis_signal.root")
-ifile2 = r.TFile("/Users/zmao/M-Data/School/Brown/Work/Analysis/H->TauTau/MC/analysis_tt.root")
-ZZchain = r.TChain("ttTreeFinal/eventTree")
-tool.addFiles(ZZchain, "/Users/zmao/M-Data/School/Brown/Work/Analysis/H->TauTau/MC")
 
-tree = ifile.Get("ttTreeFinal/eventTree")
-tree2 = ifile2.Get("ttTreeFinal/eventTree")
+#*******Open input file and find associated tree*******
+HChain = r.TChain("ttTreeFinal/eventTree")
+ttChain = r.TChain("ttTreeFinal/eventTree")
+ZZChain = r.TChain("ttTreeFinal/eventTree")
+tool.addFiles(HChain, " ")
+tool.addFiles(ttChain, " ")
+tool.addFiles(ZZchain, "/Users/zmao/M-Data/School/Brown/Work/Analysis/H->TauTau/MC")
 
 h_mjj_h = r.TH1F("h_mjj_h"," ", 56, 20, 300)
 h_mjj_tt = r.TH1F("h_mjj_tt"," ", 56, 20, 300)
@@ -43,25 +43,25 @@ J2 = lvClass()
 J3 = lvClass()
 J4 = lvClass()
 
-for i in range(0, tree.GetEntries()):
-    tree.GetEntry(i)
+for i in range(0, HChain.GetEntries()):
+    HChain.GetEntry(i)
 
-    jetsList = [(tree.J1CSVbtag, J1.SetCoordinates(tree.J1Pt, tree.J1Eta, tree.J1Phi, tree.J1Mass)),
-                (tree.J2CSVbtag, J2.SetCoordinates(tree.J2Pt, tree.J2Eta, tree.J2Phi, tree.J2Mass)),
-                (tree.J3CSVbtag, J3.SetCoordinates(tree.J3Pt, tree.J3Eta, tree.J3Phi, tree.J3Mass)),
-                (tree.J4CSVbtag, J4.SetCoordinates(tree.J4Pt, tree.J4Eta, tree.J4Phi, tree.J4Mass))
+    jetsList = [(HChain.J1CSVbtag, J1.SetCoordinates(HChain.J1Pt, HChain.J1Eta, HChain.J1Phi, HChain.J1Mass)),
+                (HChain.J2CSVbtag, J2.SetCoordinates(HChain.J2Pt, HChain.J2Eta, HChain.J2Phi, HChain.J2Mass)),
+                (HChain.J3CSVbtag, J3.SetCoordinates(HChain.J3Pt, HChain.J3Eta, HChain.J3Phi, HChain.J3Mass)),
+                (HChain.J4CSVbtag, J4.SetCoordinates(HChain.J4Pt, HChain.J4Eta, HChain.J4Phi, HChain.J4Mass))
                 ]
     jetsList = sorted(jetsList, key=itemgetter(0), reverse=True)
     total.Fill((jetsList[0][1]+jetsList[1][1]).mass())
         h_mjj_h.Fill((jetsList[0][1]+jetsList[1][1]).mass())
 
-for i in range(0, tree2.GetEntries()):
-    tree2.GetEntry(i)
+for i in range(0, ttChain.GetEntries()):
+    ttChain.GetEntry(i)
 
-    jetsList = [(tree2.J1CSVbtag, J1.SetCoordinates(tree2.J1Pt, tree2.J1Eta, tree2.J1Phi, tree2.J1Mass)),
-                (tree2.J2CSVbtag, J2.SetCoordinates(tree2.J2Pt, tree2.J2Eta, tree2.J2Phi, tree2.J2Mass)),
-                (tree2.J3CSVbtag, J3.SetCoordinates(tree2.J3Pt, tree2.J3Eta, tree2.J3Phi, tree2.J3Mass)),
-                (tree2.J4CSVbtag, J4.SetCoordinates(tree2.J4Pt, tree2.J4Eta, tree2.J4Phi, tree2.J4Mass))
+    jetsList = [(ttChain.J1CSVbtag, J1.SetCoordinates(ttChain.J1Pt, ttChain.J1Eta, ttChain.J1Phi, ttChain.J1Mass)),
+                (ttChain.J2CSVbtag, J2.SetCoordinates(ttChain.J2Pt, ttChain.J2Eta, ttChain.J2Phi, ttChain.J2Mass)),
+                (ttChain.J3CSVbtag, J3.SetCoordinates(ttChain.J3Pt, ttChain.J3Eta, ttChain.J3Phi, ttChain.J3Mass)),
+                (ttChain.J4CSVbtag, J4.SetCoordinates(ttChain.J4Pt, ttChain.J4Eta, ttChain.J4Phi, ttChain.J4Mass))
                 ]
     jetsList = sorted(jetsList, key=itemgetter(0), reverse=True)
     if jetsList[0][0] > CSVCut1 and jetsList[1][0] > CSVCut2:
