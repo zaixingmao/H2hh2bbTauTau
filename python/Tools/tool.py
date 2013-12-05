@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-
+import sys
 import ROOT as r
+import time
 lvClass = r.Math.LorentzVector(r.Math.PtEtaPhiM4D('double'))
 b1 = lvClass()
 b2 = lvClass()
@@ -64,8 +65,11 @@ def addFiles(ch, dirName, ext = ".root"):
             added+=1
             AddedPercent = added/totalAmount
             if not AddedPercent < printTick:
-                print "Added: %0.f" %(round(AddedPercent,2)*100) + "%"
-                printTick += 0.2
+                sys.stdout.write("\rAdded: %0.f" %(round(AddedPercent,2)*100) + "%")
+                sys.stdout.flush()
+                time.sleep(1)
+                printTick += 0.2         
+    print ""
     return added
 
     
