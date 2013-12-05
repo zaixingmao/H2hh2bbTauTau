@@ -50,4 +50,16 @@ def matchBJet(tree):
     
     return j1, j2
 
-        
+    
+def addFiles(ch, dirName, ext = ".root"):
+    added = 0
+    dir = r.TSystemDirectory(dirName, dirName)
+    files = dir.GetListOfFiles()
+    for iFile in files:
+        fName = dirName + '/' + iFile.GetName()
+        if (not iFile.IsDirectory()) and fName.endswith(ext):
+            ch.Add(fName)
+            added+=1
+    return added
+
+    
