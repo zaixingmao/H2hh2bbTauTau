@@ -53,18 +53,19 @@ def matchBJet(tree):
     
 def addFiles(ch, dirName, ext = ".root"):
     added = 0.
-    printTick = 0.1
+    printTick = 0.2
     dir = r.TSystemDirectory(dirName, dirName)
     files = dir.GetListOfFiles()
-    totalAmount = files.Size() + 0.
+    totalAmount = files.GetSize() - 2.
     for iFile in files:
         fName = dirName + '/' + iFile.GetName()
         if (not iFile.IsDirectory()) and fName.endswith(ext):
             ch.Add(fName)
             added+=1
-            if added/totalAmount > printTick:
-                print "Finished %d" %round(added/totalAmount,2)
-                printTick += 0.1
+            AddedPercent = added/totalAmount
+            if not AddedPercent < printTick:
+                print "Added: %0.f" %(round(AddedPercent,2)*100) + "%"
+                printTick += 0.2
     return added
 
     
