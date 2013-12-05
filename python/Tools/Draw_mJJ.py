@@ -3,6 +3,7 @@
 import ROOT as r
 import tool
 from operator import itemgetter
+import os
 
 psfile="mJJprerequire"
 
@@ -114,6 +115,8 @@ c = r.TCanvas("c","Test", 800, 600)
 r.gPad.SetTickx()
 r.gPad.SetTicky()
 
+plotPath = os.environ['PYPATH']+'/Plots/'
+psfile = plotPath + psfile
 ps = r.TPostScript(psfile,112)
 
 l1.AddEntry(h_mjj_h,"h(125) -> bb")
