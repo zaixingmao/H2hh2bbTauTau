@@ -6,10 +6,8 @@ from operator import itemgetter
 
 psfile="/Users/zmao/M-Data/School/Brown/Work/Analysis/H->TauTau/Plots/mJJprerequire.eps"
 
-#Title = "No Required b Tags, EleMuLooseVeto on Leg1"
 Title = "Require "
 
-applyEleMuLooseVeto1 = 0
 
 CSVCut1 = -99999
 CSVCut2 = -99999
@@ -23,9 +21,6 @@ if CSVCut1 == 0.679 and CSVCut2 == 0.679:
 if CSVCut1 < 0 and CSVCut2 < 0:
     Title = Title + "no b tags"
     psfile = psfile + "_no_b_tag.eps"
-if applyEleMuLooseVeto1:
-    psfile = psfile[0:psfile.find('.')] + "_emLooseVeto.eps"
-    Title = Title + " emLooseVeto"
 
 r.gStyle.SetOptStat(0)
 #*******Open input file and find associated tree*******
@@ -58,10 +53,6 @@ for i in range(0, tree.GetEntries()):
                 ]
     jetsList = sorted(jetsList, key=itemgetter(0), reverse=True)
     total.Fill((jetsList[0][1]+jetsList[1][1]).mass())
-    if jetsList[0][0] > CSVCut1 and jetsList[1][0] > CSVCut2:
-        if applyEleMuLooseVeto1:
-            if tree.tauElectronLMVAPass1 == 0 or tree.againstMuonLoose1 == 0:
-                continue
         h_mjj_h.Fill((jetsList[0][1]+jetsList[1][1]).mass())
 
 for i in range(0, tree2.GetEntries()):
@@ -74,13 +65,10 @@ for i in range(0, tree2.GetEntries()):
                 ]
     jetsList = sorted(jetsList, key=itemgetter(0), reverse=True)
     if jetsList[0][0] > CSVCut1 and jetsList[1][0] > CSVCut2:
-        if applyEleMuLooseVeto1:
-            if tree2.tauElectronLMVAPass1 == 0 or tree2.againstMuonLoose1 == 0:
-                continue
         h_mjj_tt.Fill((jetsList[0][1]+jetsList[1][1]).mass())
 
 for i in range(0, ZZchain.GetEntries()):
-    tree3.GetEntry(i)
+    ZZchain.GetEntry(i)
 
     jetsList = [(ZZchain.J1CSVbtag, J1.SetCoordinates(ZZchain.J1Pt, ZZchain.J1Eta, ZZchain.J1Phi, ZZchain.J1Mass)),
                 (ZZchain.J2CSVbtag, J2.SetCoordinates(ZZchain.J2Pt, ZZchain.J2Eta, ZZchain.J2Phi, ZZchain.J2Mass)),
@@ -89,9 +77,6 @@ for i in range(0, ZZchain.GetEntries()):
                 ]
     jetsList = sorted(jetsList, key=itemgetter(0), reverse=True)
     if jetsList[0][0] > CSVCut1 and jetsList[1][0] > CSVCut2:
-        if applyEleMuLooseVeto1:
-            if ZZchain.tauElectronLMVAPass1 == 0 or ZZchain.againstMuonLoose1 == 0:
-                continue
         h_mjj_zz.Fill((jetsList[0][1]+jetsList[1][1]).mass())
 
 integral = h_mjj_h.Integral()
