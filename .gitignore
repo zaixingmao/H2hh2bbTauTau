@@ -46,6 +46,10 @@ Thumbs.db
 ######################
 *.root
 
-# Useless folders #
+# Data file folders #
 ######################
 MC/
+
+# Previous versions #
+######################
+*~
