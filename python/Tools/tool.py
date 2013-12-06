@@ -52,20 +52,17 @@ def matchBJet(tree):
     return j1, j2
 
 def printProcessStatus(iCurrent, total, processName = 'Foo process'):
-    printTick = 0.0
     iCurrent+=0.
     total+=0.
     AddedPercent = iCurrent/total
-    if not (AddedPercent < printTick):
-        sys.stdout.write("\r%s completed: %0.f" %(processName, round(AddedPercent,2)*100) + "%")
-        sys.stdout.flush()
-        printTick += 0.2
-        
-def addFiles(ch, dirName, ext = ".root"):
+    sys.stdout.write("\r%s completed: %0.f" %(processName, round(AddedPercent,2)*100) + "%")
+    sys.stdout.flush()
+
+
+def addFiles(ch, dirName):
     added = 0.
     dir = r.TSystemDirectory(dirName, dirName)
     files = dir.GetListOfFiles()
-    totalAmount = files.GetSize() - 2.
     for iFile in files:
         fName = dirName + '/' + iFile.GetName()
         if (not iFile.IsDirectory()) and fName.endswith(ext):
