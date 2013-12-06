@@ -59,16 +59,24 @@ def printProcessStatus(iCurrent, total, processName = 'Foo process'):
     sys.stdout.flush()
 
 
-def addFiles(ch, dirName):
+def addFiles(ch, dirName, knownEventNumber):
     added = 0.
     dir = r.TSystemDirectory(dirName, dirName)
     files = dir.GetListOfFiles()
+    totalAmount = files.GetSize() - 2.
     for iFile in files:
         fName = dirName + '/' + iFile.GetName()
-        if (not iFile.IsDirectory()) and fName.endswith(ext):
-            ch.Add(fName)
+        if (not iFile.IsDirectory()) and fName.endswith(".root"):
+            ch.Add(fName, knownEventNumber)
             added+=1
             printProcessStatus(iCurrent=added, total=totalAmount, processName = 'Adding files from [%s]' %dirName)
     print ""
     return added
+
+def unitNormHists(HistNameList):
+    for iHist in HistNameList:
+        integral = iHist.Integral()
+        if integral > 0:
+            iHist.Scale(1/integral)
+
             
