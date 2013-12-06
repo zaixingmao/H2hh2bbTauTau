@@ -59,7 +59,7 @@ for i in range(0, Htotal):
 
 print ''
 ttTotal = ttChain.GetEntries()
-for i in range(0, ttChain.GetEntries()):
+for i in range(0, ttTotal):
     ttChain.GetEntry(i)
     tool.printProcessStatus(iCurrent=i, total=ttTotal, processName = 'Looping tt sample')
     jetsList = [(ttChain.J1CSVbtag, J1.SetCoordinates(ttChain.J1Pt, ttChain.J1Eta, ttChain.J1Phi, ttChain.J1Mass)),
