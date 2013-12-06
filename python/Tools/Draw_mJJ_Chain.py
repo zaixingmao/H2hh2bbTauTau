@@ -29,9 +29,9 @@ r.gStyle.SetOptStat(0)
 HChain = r.TChain("ttTreeFinal/eventTree")
 ttChain = r.TChain("ttTreeFinal/eventTree")
 ZZChain = r.TChain("ttTreeFinal/eventTree")
-tool.addFiles(HChain, " ")
-tool.addFiles(ttChain, " ")
-tool.addFiles(ZZchain, "/Users/zmao/M-Data/School/Brown/Work/Analysis/H->TauTau/MC")
+tool.addFiles(HChain, "/hdfs/store/user/zmao/H2hh-SUB-TT")
+tool.addFiles(ttChain, "/hdfs/store/user/zmao/tt-SUB-TT")
+tool.addFiles(ZZChain, "/hdfs/store/user/zmao/ZZ2-SUB-TT")
 
 h_mjj_h = r.TH1F("h_mjj_h"," ", 56, 20, 300)
 h_mjj_tt = r.TH1F("h_mjj_tt"," ", 56, 20, 300)
@@ -43,10 +43,10 @@ J1 = lvClass()
 J2 = lvClass()
 J3 = lvClass()
 J4 = lvClass()
-
-for i in range(0, HChain.GetEntries()):
+Htotal= HChain.GetEntries()
+for i in range(0, Htotal):
     HChain.GetEntry(i)
-
+    tool.printProcessStatus(iCurrent=i, total=Htotal, processName = 'Looping signal sample')
     jetsList = [(HChain.J1CSVbtag, J1.SetCoordinates(HChain.J1Pt, HChain.J1Eta, HChain.J1Phi, HChain.J1Mass)),
                 (HChain.J2CSVbtag, J2.SetCoordinates(HChain.J2Pt, HChain.J2Eta, HChain.J2Phi, HChain.J2Mass)),
                 (HChain.J3CSVbtag, J3.SetCoordinates(HChain.J3Pt, HChain.J3Eta, HChain.J3Phi, HChain.J3Mass)),
@@ -54,11 +54,14 @@ for i in range(0, HChain.GetEntries()):
                 ]
     jetsList = sorted(jetsList, key=itemgetter(0), reverse=True)
     total.Fill((jetsList[0][1]+jetsList[1][1]).mass())
+    if jetsList[0][0] > CSVCut1 and jetsList[1][0] > CSVCut2:
         h_mjj_h.Fill((jetsList[0][1]+jetsList[1][1]).mass())
 
+print ''
+ttTotal = ttChain.GetEntries()
 for i in range(0, ttChain.GetEntries()):
     ttChain.GetEntry(i)
-
+    tool.printProcessStatus(iCurrent=i, total=ttTotal, processName = 'Looping tt sample')
     jetsList = [(ttChain.J1CSVbtag, J1.SetCoordinates(ttChain.J1Pt, ttChain.J1Eta, ttChain.J1Phi, ttChain.J1Mass)),
                 (ttChain.J2CSVbtag, J2.SetCoordinates(ttChain.J2Pt, ttChain.J2Eta, ttChain.J2Phi, ttChain.J2Mass)),
                 (ttChain.J3CSVbtag, J3.SetCoordinates(ttChain.J3Pt, ttChain.J3Eta, ttChain.J3Phi, ttChain.J3Mass)),
@@ -68,18 +71,21 @@ for i in range(0, ttChain.GetEntries()):
     if jetsList[0][0] > CSVCut1 and jetsList[1][0] > CSVCut2:
         h_mjj_tt.Fill((jetsList[0][1]+jetsList[1][1]).mass())
 
-for i in range(0, ZZchain.GetEntries()):
-    ZZchain.GetEntry(i)
-
-    jetsList = [(ZZchain.J1CSVbtag, J1.SetCoordinates(ZZchain.J1Pt, ZZchain.J1Eta, ZZchain.J1Phi, ZZchain.J1Mass)),
-                (ZZchain.J2CSVbtag, J2.SetCoordinates(ZZchain.J2Pt, ZZchain.J2Eta, ZZchain.J2Phi, ZZchain.J2Mass)),
-                (ZZchain.J3CSVbtag, J3.SetCoordinates(ZZchain.J3Pt, ZZchain.J3Eta, ZZchain.J3Phi, ZZchain.J3Mass)),
-                (ZZchain.J4CSVbtag, J4.SetCoordinates(ZZchain.J4Pt, ZZchain.J4Eta, ZZchain.J4Phi, ZZchain.J4Mass))
+print  ''
+ZZTotal = ZZChain.GetEntries()
+for i in range(0, ZZChain.GetEntries()):
+    ZZChain.GetEntry(i)
+    tool.printProcessStatus(iCurrent=i, total=ZZTotal, processName = 'Looping ZZ sample')
+    jetsList = [(ZZChain.J1CSVbtag, J1.SetCoordinates(ZZChain.J1Pt, ZZChain.J1Eta, ZZChain.J1Phi, ZZChain.J1Mass)),
+                (ZZChain.J2CSVbtag, J2.SetCoordinates(ZZChain.J2Pt, ZZChain.J2Eta, ZZChain.J2Phi, ZZChain.J2Mass)),
+                (ZZChain.J3CSVbtag, J3.SetCoordinates(ZZChain.J3Pt, ZZChain.J3Eta, ZZChain.J3Phi, ZZChain.J3Mass)),
+                (ZZChain.J4CSVbtag, J4.SetCoordinates(ZZChain.J4Pt, ZZChain.J4Eta, ZZChain.J4Phi, ZZChain.J4Mass))
                 ]
     jetsList = sorted(jetsList, key=itemgetter(0), reverse=True)
     if jetsList[0][0] > CSVCut1 and jetsList[1][0] > CSVCut2:
         h_mjj_zz.Fill((jetsList[0][1]+jetsList[1][1]).mass())
 
+print ''
 integral = h_mjj_h.Integral()
 signal = total.Integral()
 ratio = integral/signal * 100
