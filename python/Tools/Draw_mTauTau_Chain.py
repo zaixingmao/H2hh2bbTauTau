@@ -10,6 +10,8 @@ psfile="mTauTau_withRequirements.eps"
 #Title = "No Required b Tags, EleMuLooseVeto on Leg1"
 Title = " "
 
+DrawSVMass = False
+
 r.gStyle.SetOptStat(0)
 #*******Open input file and find associated tree*******
 HChain = r.TChain("ttTreeFinal/eventTree")
@@ -24,40 +26,27 @@ mTauTau_tt = r.TH1F("mTauTau_tt"," ", 56, 20, 300)
 mTauTau_zz = r.TH1F("mTauTau_zz"," ", 56, 20, 300)
 total = r.TH1F("total"," ", 56, 20, 300)
 
+ChainHistList = [(HChain, mTauTau_h), (ttChain, mTauTau_tt), (ZZChain, mTauTau_zz)]
+
 lvClass = r.Math.LorentzVector(r.Math.PtEtaPhiM4D('double'))
 tau1 = lvClass()
 tau2 = lvClass()
-Htotal= HChain.GetEntries()
-for i in range(0, Htotal):
-    HChain.GetEntry(i)
-    tool.printProcessStatus(iCurrent=i, total=Htotal, processName = 'Looping signal sample')
-    for iTauPair in range(HChain.pt1.size()):
-        tau1.SetCoordinates(HChain.pt1.at(iTauPair), HChain.eta1.at(iTauPair), HChain.phi1.at(iTauPair), HChain.m1.at(iTauPair))
-        tau2.SetCoordinates(HChain.pt2.at(iTauPair), HChain.eta2.at(iTauPair), HChain.phi2.at(iTauPair), HChain.m2.at(iTauPair))
-        total.Fill((tau1+tau2).mass())
-        mTauTau_h.Fill((tau1+tau2).mass())
 
-print ''
-ttTotal = ttChain.GetEntries()
-for i in range(0, ttTotal):
-    ttChain.GetEntry(i)
-    tool.printProcessStatus(iCurrent=i, total=ttTotal, processName = 'Looping tt sample')
-    for iTauPair in range(ttChain.pt1.size()):
-        tau1.SetCoordinates(ttChain.pt1.at(iTauPair), ttChain.eta1.at(iTauPair), ttChain.phi1.at(iTauPair), ttChain.m1.at(iTauPair))
-        tau2.SetCoordinates(ttChain.pt2.at(iTauPair), ttChain.eta2.at(iTauPair), ttChain.phi2.at(iTauPair), ttChain.m2.at(iTauPair))
-        mTauTau_tt.Fill((tau1+tau2).mass())
+for iChain, iHist in ChainHistList:
+    total= iChain.GetEntries()
+    for i in range(0, total):
+        iChain.GetEntry(i)
+        tool.printProcessStatus(iCurrent=i, total=total, processName = 'Looping signal sample')
+        if DrawSVMass:
+            for iMass in range(iChain.svMass.size()):
+                iHist.Fill(iChain.svMass.at(iMass))
+        else:
+            for iTauPair in range(iChain.pt1.size()):
+                tau1.SetCoordinates(iChain.pt1.at(iTauPair), iChain.eta1.at(iTauPair), iChain.phi1.at(iTauPair), iChain.m1.at(iTauPair))
+                tau2.SetCoordinates(iChain.pt2.at(iTauPair), iChain.eta2.at(iTauPair), iChain.phi2.at(iTauPair), iChain.m2.at(iTauPair))
+                iHist.Fill((tau1+tau2).mass())
+    print ''
 
-print ''
-ZZTotal = ZZChain.GetEntries()
-for i in range(0, ZZTotal):
-    ZZChain.GetEntry(i)
-    tool.printProcessStatus(iCurrent=i, total=ZZTotal, processName = 'Looping ZZ sample')
-    for iTauPair in range(ZZChain.pt1.size()):
-        tau1.SetCoordinates(ZZChain.pt1.at(iTauPair), ZZChain.eta1.at(iTauPair), ZZChain.phi1.at(iTauPair), ZZChain.m1.at(iTauPair))
-        tau2.SetCoordinates(ZZChain.pt2.at(iTauPair), ZZChain.eta2.at(iTauPair), ZZChain.phi2.at(iTauPair), ZZChain.m2.at(iTauPair))
-        mTauTau_zz.Fill((tau1+tau2).mass())
-
-print ''
 integral = mTauTau_h.Integral()
 signal = total.Integral()
 ratio = integral/signal * 100
