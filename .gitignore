@@ -53,3 +53,7 @@ MC/
 # Previous versions #
 ######################
 *~
+
+# Local test files #
+######################
+python/Tools/test.py
