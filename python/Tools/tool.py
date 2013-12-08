@@ -2,6 +2,8 @@
 import sys
 import ROOT as r
 import time
+from operator import itemgetter
+
 lvClass = r.Math.LorentzVector(r.Math.PtEtaPhiM4D('double'))
 b1 = lvClass()
 b2 = lvClass()
@@ -79,4 +81,40 @@ def unitNormHists(HistNameList):
         if integral > 0:
             iHist.Scale(1/integral)
 
-            
+def setDrawHists(sigHist, ttHist, ZZHist, DrawOpt = ""):
+
+    sigHist.SetLineWidth(2)
+    sigHist.SetFillStyle(3001)
+    sigHist.SetFillColor(4)
+    sigHist.SetLineColor(4)
+
+    ttHist.SetLineWidth(2)
+    ttHist.SetFillStyle(3001)
+    ttHist.SetFillColor(2)
+    ttHist.SetLineColor(2)
+    ttMax = ttHist.GetMaximum() 
+
+    ZZHist.SetLineWidth(2)
+    ZZHist.SetLineStyle(2)
+    ZZHist.SetLineColor(1)
+    ZZMax = ZZHist.GetMaximum()
+
+    HistMaxList = [(sigHist.GetMaximum(), sigHist),
+                   (ttHist.GetMaximum(), ttHist),
+                   (ZZHist.GetMaximum(), ZZHist)]
+    HistMaxList = sorted(HistMaxList, key=itemgetter(0), reverse=True)
+    #draw from the highest histogram
+
+    HistMaxList[0][1].Draw(DrawOpt)
+    DrawOpt = "same" + DrawOpt
+    HistMaxList[1][1].Draw(DrawOpt)
+    HistMaxList[2][1].Draw(DrawOpt)
+
+def setDrawMyLegend(lPosition, lHistList):
+    l = r.TLegend(lPosition[0], lPosition[1], lPosition[2], lPosition[3])
+    l.SetFillStyle(0)
+    l.SetBorderSize(0)
+    for i in range(len(lHistList)):
+        l.AddEntry(lHistList[i][0], lHistList[i][1])
+    l.Draw("same")
+
