@@ -110,11 +110,11 @@ def setDrawHists(sigHist, ttHist, ZZHist, DrawOpt = ""):
     HistMaxList[1][1].Draw(DrawOpt)
     HistMaxList[2][1].Draw(DrawOpt)
 
-def setDrawMyLegend(lPosition, lHistList):
+def setMyLegend(lPosition, lHistList):
     l = r.TLegend(lPosition[0], lPosition[1], lPosition[2], lPosition[3])
     l.SetFillStyle(0)
     l.SetBorderSize(0)
     for i in range(len(lHistList)):
         l.AddEntry(lHistList[i][0], lHistList[i][1])
-    l.Draw("same")
+    return l
 

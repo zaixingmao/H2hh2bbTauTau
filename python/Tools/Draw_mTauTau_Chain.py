@@ -81,7 +81,8 @@ psfile = os.environ['PYPATH']+'/Plots/'+psfile
 ps = r.TPostScript(psfile,112)
 
 tool.setDrawHists(sigHist=mTauTau_h, ttHist=mTauTau_tt, ZZHist=mTauTau_zz)
-tool.setDrawMyLegend(lPosition=legendPosition, lHistList=legendHistos)
+l = tool.setMyLegend(lPosition=legendPosition, lHistList=legendHistos)
+l.Draw("same")
 ps.Close()
 
 print "Plot saved at %s" %(psfile)
