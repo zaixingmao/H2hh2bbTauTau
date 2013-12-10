@@ -7,32 +7,34 @@ import os
 import enVars
 
 
-DrawWhichSample = "signal"
-DrawSVMass = False
+DrawWhichSample = "tt"
+DrawSVMass = True
 
 r.gStyle.SetOptStat(0)
 
-CSVCut1 = 0.679
-
+CSVCut1 = -999999#0.679
+CSVCut2 = -999999#0.244
 title = "H -> hh" if DrawWhichSample == "signal" else "t#bar{t}"
 
 
 psfile= "2DMass_" + DrawWhichSample
-if CSVCut1 == 0.679:
-    title = title + "(1 medium b tag)"
-    psfile = psfile + "_1_b_tag.eps"
+if CSVCut1 == 0.679 and CSVCut2 == 0.244:
+    title = title + "(1 medium, 1 loose b tag)"
+    psfile = psfile + "_2_b_tag.eps"
 # if CSVCut1 == 0.679 and CSVCut2 == 0.679:
 #     title = title + "(2 medium b tags)"
 #     psfile = psfile + "_2_b_tag.eps"
-# if CSVCut1 < 0 and CSVCut2 < 0:
+#if CSVCut1 < 0 and CSVCut2 < 0:
 #     title = title + "(no b tags)"
-#     psfile = psfile + "_no_b_tag.eps"
+else:
+    psfile = psfile + "_no_b_tag.eps"
 
 signalLocation = enVars.signalLocation
 ttLocation = enVars.ttLocation
 signalEntries = enVars.signalEntries
 ttEntries = enVars.ttEntries
 
+print tool.addHistFirstBinFromFiles(dirName=signalLocation)
 #*******Open input file and find associated tree*******
 Chain = r.TChain("ttTreeFinal/eventTree")
 if DrawWhichSample == "signal":
@@ -67,7 +69,7 @@ for i in range(0, total):
                 (Chain.J4CSVbtag, J4.SetCoordinates(Chain.J4Pt, Chain.J4Eta, Chain.J4Phi, Chain.J4Mass))
                 ]
     jetsList = sorted(jetsList, key=itemgetter(0), reverse=True)
-    if not (jetsList[0][0] < CSVCut1):
+    if (jetsList[0][0] < CSVCut1) or (jetsList[1][0] < CSVCut2):
         continue
     if DrawSVMass:
         for iMass in range(Chain.svMass.size()):

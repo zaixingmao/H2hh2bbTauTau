@@ -81,6 +81,16 @@ def unitNormHists(HistNameList):
         if integral > 0:
             iHist.Scale(1/integral)
 
+def xsNormHists(HistNameList, xsList):
+    i=0
+    for iHist in HistNameList:
+        integral = iHist.Integral()
+        if integral > 0:
+            iHist.Scale(xsList[i]/integral*20)
+            print  xsList[i]/integral*20
+            print xsList[i]
+        i+=1
+
 def setDrawHists(sigHist, ttHist, ZZHist, DrawOpt = ""):
 
     sigHist.SetLineWidth(2)
@@ -118,3 +128,20 @@ def setMyLegend(lPosition, lHistList):
         l.AddEntry(lHistList[i][0], lHistList[i][1])
     return l
 
+def addHistFirstBinFromFiles(dirName, nBins=15, xMin=0, xMax=14):
+    added = 0.
+    firstBinSum = 0
+    dir = r.TSystemDirectory(dirName, dirName)
+    files = dir.GetListOfFiles()
+    totalAmount = files.GetSize() - 2.
+    for iFile in files:
+        fName = dirName + '/' + iFile.GetName()
+        if (not iFile.IsDirectory()) and fName.endswith(".root"):
+            tmpHist = r.TH1F("tmpHist", " ", nBins, xMin, xMax)
+            ifile = r.TFile(fName)
+            tmpHist = ifile.Get("TT/results")
+            firstBinSum+=tmpHist.GetBinContent(1)
+            added+=1
+            printProcessStatus(iCurrent=added, total=totalAmount, processName = 'Adding files from [%s]' %dirName)
+    print ""
+    return firstBinSum
