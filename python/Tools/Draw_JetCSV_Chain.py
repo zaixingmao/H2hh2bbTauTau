@@ -6,7 +6,7 @@ from operator import itemgetter
 import os
 import enVars
 
-psfile="JetCSV.eps"
+psfile="JetCSV_withJetSelection.eps"
 
 Title = "Require "
 
@@ -27,13 +27,13 @@ tool.addFiles(ch=HChain, dirName=signalLocation, knownEventNumber=signalEntries)
 tool.addFiles(ch=ttChain, dirName=ttLocation, knownEventNumber=ttEntries)
 tool.addFiles(ch=ZZChain, dirName=ZZLocation, knownEventNumber=ZZEntries)
 
-jetCSV1_signal = r.TH1F("jetCSV1_signal"," ", 100, 0, 1)
-jetCSV1_tt = r.TH1F("jetCSV1_tt"," ", 100, 0, 1)
-jetCSV1_ZZ = r.TH1F("jetCSV1_ZZ"," ", 100, 0, 1)
-total = r.TH1F("total"," ", 100, 0, 1)
-jetCSV2_signal = r.TH1F("jetCSV2_signal"," ", 100, 0, 1)
-jetCSV2_tt = r.TH1F("jetCSV2_tt"," ", 100, 0, 1)
-jetCSV2_ZZ = r.TH1F("jetCSV2_ZZ"," ", 100, 0, 1)
+jetCSV1_signal = r.TH1F("jetCSV1_signal"," ", 50, 0, 1)
+jetCSV1_tt = r.TH1F("jetCSV1_tt"," ", 50, 0, 1)
+jetCSV1_ZZ = r.TH1F("jetCSV1_ZZ"," ", 50, 0, 1)
+total = r.TH1F("total"," ", 50, 0, 1)
+jetCSV2_signal = r.TH1F("jetCSV2_signal"," ", 50, 0, 1)
+jetCSV2_tt = r.TH1F("jetCSV2_tt"," ", 50, 0, 1)
+jetCSV2_ZZ = r.TH1F("jetCSV2_ZZ"," ", 50, 0, 1)
 
 lvClass = r.Math.LorentzVector(r.Math.PtEtaPhiM4D('double'))
 J1 = lvClass()
@@ -60,6 +60,10 @@ for iChain, iLocation, iEntries, iHist1, iHist2 in ChainHistList:
                     (iChain.J3CSVbtag, J3.SetCoordinates(iChain.J3Pt, iChain.J3Eta, iChain.J3Phi, iChain.J3Mass)),
                     (iChain.J4CSVbtag, J4.SetCoordinates(iChain.J4Pt, iChain.J4Eta, iChain.J4Phi, iChain.J4Mass))]
         jetsList = sorted(jetsList, key=itemgetter(0), reverse=True)
+        if jetsList[0][1].pt() < 20 or abs(jetsList[0][1].eta()) > 2.4:
+            continue
+        if jetsList[1][1].pt() < 20 or abs(jetsList[1][1].eta()) > 2.4:
+            continue
         iHist1.Fill(jetsList[0][0])
         iHist2.Fill(jetsList[1][0])
     print ''
@@ -68,13 +72,13 @@ for iChain, iLocation, iEntries, iHist1, iHist2 in ChainHistList:
 tool.unitNormHists(HistNameList)
 
 legendPosition = (0.58, 0.7, 0.88, 0.80)
-legendHist1 = [(jetCSV1_signal,"H->hh"), (jetCSV1_ZZ,"ZZjets -> 2q2l"), (jetCSV1_tt,"t#bar{t}")]
-legendHist2 = [(jetCSV2_signal,"H->hh"), (jetCSV2_ZZ,"ZZjets -> 2q2l"), (jetCSV2_tt,"t#bar{t}")]
+legendHist1 = [(jetCSV1_signal,"H -> hh -> #tau^{+}#tau^{-} b#bar{b}"), (jetCSV1_ZZ,"ZZ + jets -> 2q 2l"), (jetCSV1_tt,"t#bar{t}")]
+legendHist2 = [(jetCSV2_signal,"H -> hh -> #tau^{+}#tau^{-} b#bar{b}"), (jetCSV2_ZZ,"ZZ + jets -> 2q 2l"), (jetCSV2_tt,"t#bar{t}")]
 
-jetCSV1_signal.SetTitle("%s; CVS1; Unit Normalized" % (Title))
-jetCSV2_tt.SetTitle("%s; CVS2; Unit Normalized" % (Title))
+jetCSV1_signal.SetTitle("%s; CSV1; Unit Normalized" % (Title))
+jetCSV2_ZZ.SetTitle("%s; CSV2; Unit Normalized" % (Title))
 jetCSV1_signal.GetYaxis().SetTitleOffset(1.3)
-jetCSV2_tt.GetYaxis().SetTitleOffset(1.3)
+jetCSV2_ZZ.GetYaxis().SetTitleOffset(1.3)
 
 c = r.TCanvas("c","Test", 1400, 600)
 r.gPad.SetTickx()

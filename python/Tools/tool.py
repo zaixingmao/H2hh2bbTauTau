@@ -76,10 +76,14 @@ def addFiles(ch, dirName, knownEventNumber):
     return added
 
 def unitNormHists(HistNameList):
+    integralList = []
     for iHist in HistNameList:
         integral = iHist.Integral()
+        integralList.append(integral+0.)
         if integral > 0:
             iHist.Scale(1/integral)
+    print integralList
+    return integralList
 
 def xsNormHists(HistNameList, xsList):
     i=0
@@ -87,8 +91,6 @@ def xsNormHists(HistNameList, xsList):
         integral = iHist.Integral()
         if integral > 0:
             iHist.Scale(xsList[i]/integral*20)
-            print  xsList[i]/integral*20
-            print xsList[i]
         i+=1
 
 def setDrawHists(sigHist, ttHist, ZZHist, DrawOpt = ""):
@@ -145,3 +147,21 @@ def addHistFirstBinFromFiles(dirName, nBins=15, xMin=0, xMax=14):
             printProcessStatus(iCurrent=added, total=totalAmount, processName = 'Adding files from [%s]' %dirName)
     print ""
     return firstBinSum
+
+def addHistFromFiles(dirName, histName, hist, xAxisLabels = ['']):
+    added=0.
+    dir = r.TSystemDirectory(dirName, dirName)
+    files = dir.GetListOfFiles()
+    totalAmount = files.GetSize() - 2.
+    isFirstFile = True
+    for iFile in files:
+        fName = dirName + '/' + iFile.GetName()
+        if (not iFile.IsDirectory()) and fName.endswith(".root"):
+            tmpHist = r.TH1F()
+            ifile = r.TFile(fName)
+            tmpHist = ifile.Get(histName)
+            for i in range(len(xAxisLabels)):
+                hist.Fill(xAxisLabels[i],tmpHist.GetBinContent(i+1))
+            added+=1.
+            printProcessStatus(iCurrent=added, total=totalAmount, processName = 'Adding Histogram from files in [%s]' %dirName)
+    print ""
