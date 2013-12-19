@@ -11,7 +11,7 @@ psfile="mTauTau"
 #Title = "No Required b Tags, EleMuLooseVeto on Leg1"
 title = "mTauTau"
 xsNorm = False
-DrawSVMass = True
+DrawSVMass = False
 JetPtEtaCut = True
 CSVCut1 = -9999999#0.679
 CSVCut2 = -9999999#0.244
@@ -126,7 +126,7 @@ else:
 
 legendPosition = (0.45, 0.75, 0.88, 0.85)
 legendHistos = [(mTauTau_h,"H -> hh -> #tau^{+}#tau^{-} b#bar{b}"), #(%.2f events/20 fb^{-1})" %(intList[0]*xsList[0]*20/sigPreSelection)),
-                (mTauTau_tt,"t#bar{t}"),# (%.1f events/20 fb^{-1})" %(intList[1]*xsList[1]*20/ttPreSelection)),
+                (mTauTau_tt,"t#bar{t} -> b#bar{b} ll"),# (%.1f events/20 fb^{-1})" %(intList[1]*xsList[1]*20/ttPreSelection)),
                 (mTauTau_zz,"ZZ + jets -> 2q 2l")]# (%.1f events/20 fb^{-1})" %(intList[2]*xsList[2]*20/ZZPreSelection))]
 
 mTauTau_zz.SetTitle(title)

@@ -72,8 +72,8 @@ for iChain, iLocation, iEntries, iHist1, iHist2 in ChainHistList:
 tool.unitNormHists(HistNameList)
 
 legendPosition = (0.58, 0.7, 0.88, 0.80)
-legendHist1 = [(jetCSV1_signal,"H -> hh -> #tau^{+}#tau^{-} b#bar{b}"), (jetCSV1_ZZ,"ZZ + jets -> 2q 2l"), (jetCSV1_tt,"t#bar{t}")]
-legendHist2 = [(jetCSV2_signal,"H -> hh -> #tau^{+}#tau^{-} b#bar{b}"), (jetCSV2_ZZ,"ZZ + jets -> 2q 2l"), (jetCSV2_tt,"t#bar{t}")]
+legendHist1 = [(jetCSV1_signal,"H -> hh -> #tau^{+}#tau^{-} b#bar{b}"), (jetCSV1_ZZ,"ZZ + jets -> 2q 2l"), (jetCSV1_tt,"t#bar{t} -> b#bar{b} ll")]
+legendHist2 = [(jetCSV2_signal,"H -> hh -> #tau^{+}#tau^{-} b#bar{b}"), (jetCSV2_ZZ,"ZZ + jets -> 2q 2l"), (jetCSV2_tt,"t#bar{t} -> b#bar{b} ll")]
 
 jetCSV1_signal.SetTitle("%s; CSV1; Unit Normalized" % (Title))
 jetCSV2_ZZ.SetTitle("%s; CSV2; Unit Normalized" % (Title))

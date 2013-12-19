@@ -89,7 +89,7 @@ intList = tool.unitNormHists(HistNameList)
             
 legendPosition = (0.58, 0.7, 0.88, 0.80)
 legendHistos = [(h_mjj_h,"H -> hh -> #tau^{+}#tau^{-} b#bar{b}"),#(%.2f events/20 fb^{-1})" %(intList[0]*xsList[0]*20/sigPreSelection)),
-                (h_mjj_tt,"t#bar{t}"), #(%.1f events/20 fb^{-1})" %(intList[1]*xsList[1]*20/ttPreSelection)),
+                (h_mjj_tt,"t#bar{t} -> b#bar{b} ll"), #(%.1f events/20 fb^{-1})" %(intList[1]*xsList[1]*20/ttPreSelection)),
                 (h_mjj_zz,"ZZ + jets -> 2q 2l")]#(%.1f events/20 fb^{-1})" %(intList[2]*xsList[2]*20/ZZPreSelection))]
 
 h_mjj_zz.SetTitle("%s; mJJCSVSort; Unit Normalized" % (Title))
