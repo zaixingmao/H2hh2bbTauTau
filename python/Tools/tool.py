@@ -7,21 +7,22 @@ from operator import itemgetter
 lvClass = r.Math.LorentzVector(r.Math.PtEtaPhiM4D('double'))
 b1 = lvClass()
 b2 = lvClass()
+tau1 = lvClass()
+tau2 = lvClass()
 j1 = lvClass()
 j2 = lvClass()
 v_tmp = lvClass()
 
 
-
 def matchBJet(tree):
-    genBPt1 = tree.bPt.at(0)
-    genBPt2 = tree.bPt.at(1)
-    genBEta1 = tree.bEta.at(0)
-    genBEta2 = tree.bEta.at(1)
-    genBPhi1 = tree.bPhi.at(0)
-    genBPhi2 = tree.bPhi.at(1)
-    genBMass1 = tree.bMass.at(0)
-    genBMass2 = tree.bMass.at(1)
+    genBPt1 = tree.genBPt.at(0)
+    genBPt2 = tree.genBPt.at(1)
+    genBEta1 = tree.genBEta.at(0)
+    genBEta2 = tree.genBEta.at(1)
+    genBPhi1 = tree.genBPhi.at(0)
+    genBPhi2 = tree.genBPhi.at(1)
+    genBMass1 = tree.genBMass.at(0)
+    genBMass2 = tree.genBMass.at(1)
 
     b1.SetCoordinates(genBPt1, genBEta1, genBPhi1, genBMass1)
     b2.SetCoordinates(genBPt2, genBEta2, genBPhi2, genBMass2)
@@ -52,6 +53,28 @@ def matchBJet(tree):
         j2.SetCoordinates(j2pt, j2eta, j2phi, 4.8)
     
     return j1, j2
+
+def genHiggsMatchGenTaus(tree):
+    higgs = lvClass()
+    if tree.genTauPt.size():
+        tau1.SetCoordinates(tree.genTauPt.at(0), tree.genTauEta.at(0), tree.genTauPhi.at(0), tree.genTauMass.at(0))
+        if tree.genTauPt.size() > 1:
+            tau2.SetCoordinates(tree.genTauPt.at(1), tree.genTauEta.at(1), tree.genTauPhi.at(1), tree.genTauMass.at(1))
+    
+    combinedGenTaus = tau1 + tau2
+
+    dr = 1.
+    #Loop to find best matching gen jet
+    for j in range(tree.higgsPt.size()):
+        v_tmp.SetCoordinates(tree.higgsPt.at(j), tree.higgsEta.at(j),
+                             tree.higgsPhi.at(j), 125)
+        dr_tmp = r.Math.VectorUtil.DeltaR(combinedGenTaus, v_tmp)
+
+        if dr > dr_tmp:
+            dr = dr_tmp
+            higgs = v_tmp
+
+    return higgs, dr
 
 def printProcessStatus(iCurrent, total, processName = 'Foo process'):
     iCurrent+=0.
@@ -93,6 +116,51 @@ def xsNormHists(HistNameList, xsList):
             iHist.Scale(xsList[i]/integral*20)
         i+=1
 
+def setDraw2Hists(hist1, hist2, drawColor=1):
+
+    hist1.SetLineWidth(1)
+    hist1.SetLineStyle(2)
+    hist2.SetFillStyle(0)
+    hist1.SetLineColor(drawColor)
+
+    hist2.SetLineWidth(1)
+    hist2.SetFillStyle(3944)
+    hist2.SetFillColor(drawColor)
+    hist2.SetLineColor(drawColor)
+
+    histMaxList = [(hist1.GetMaximum(), hist1), (hist2.GetMaximum(), hist2)]
+    histMaxList = sorted(histMaxList, key=itemgetter(0), reverse=True)
+    #draw from the highest histogram
+
+    histMaxList[0][1].Draw()
+    histMaxList[1][1].Draw("same")
+
+def setDraw3Hists(hist1, hist2, fixHist, drawColor=1):
+
+    hist1.SetLineWidth(1)
+    hist1.SetLineStyle(2)
+    hist2.SetFillStyle(0)
+    hist1.SetLineColor(drawColor)
+
+    hist2.SetLineWidth(1)
+    hist2.SetFillStyle(3944)
+    hist2.SetFillColor(drawColor)
+    hist2.SetLineColor(drawColor)
+
+    fixHist.SetLineWidth(1)
+    fixHist.SetLineStyle(2)
+    fixHist.SetLineColor(46)
+
+    histMaxList = [(hist1.GetMaximum(), hist1), (hist2.GetMaximum(), hist2), (fixHist.GetMaximum(), fixHist)]
+    histMaxList = sorted(histMaxList, key=itemgetter(0), reverse=True)
+    #draw from the highest histogram
+
+    histMaxList[0][1].Draw()
+    histMaxList[1][1].Draw("same")
+    histMaxList[2][1].Draw("same")
+    
+
+
 def setDrawHists(sigHist, ttHist, ZZHist, DrawOpt = ""):
 
     sigHist.SetLineWidth(2)
@@ -121,6 +189,49 @@ def setDrawHists(sigHist, ttHist, ZZHist, DrawOpt = ""):
     DrawOpt = "same" + DrawOpt
     HistMaxList[1][1].Draw(DrawOpt)
     HistMaxList[2][1].Draw(DrawOpt)
+
+def setDrawHists2(sigHist1, sigHist2, sigHist3, ttHist, ZZHist, DrawOpt = ""):
+
+    sigHist1.SetLineWidth(2)
+    sigHist1.SetFillStyle(3001)
+    sigHist1.SetFillColor(4)
+    sigHist1.SetLineColor(4)
+
+    sigHist1.SetLineWidth(2)
+    sigHist2.SetFillStyle(3001)
+    sigHist2.SetFillColor(6)
+    sigHist2.SetLineColor(6)
+
+    sigHist3.SetLineWidth(2)
+    sigHist3.SetFillStyle(3001)
+    sigHist3.SetFillColor(8)
+    sigHist3.SetLineColor(8)
+
+    ttHist.SetLineWidth(2)
+    ttHist.SetFillStyle(3001)
+    ttHist.SetFillColor(2)
+    ttHist.SetLineColor(2)
+    ttMax = ttHist.GetMaximum() 
+
+    ZZHist.SetLineWidth(2)
+    ZZHist.SetLineStyle(2)
+    ZZHist.SetLineColor(1)
+    ZZMax = ZZHist.GetMaximum()
+    
+    HistMaxList = [(sigHist1.GetMaximum(), sigHist1),
+                   (sigHist2.GetMaximum(), sigHist2),
+                   (sigHist3.GetMaximum(), sigHist3),
+                   (ttHist.GetMaximum(), ttHist),
+                   (ZZHist.GetMaximum(), ZZHist)]
+    HistMaxList = sorted(HistMaxList, key=itemgetter(0), reverse=True)
+    #draw from the highest histogram
+
+    HistMaxList[0][1].Draw(DrawOpt)
+    DrawOpt = "same" + DrawOpt
+    HistMaxList[1][1].Draw(DrawOpt)
+    HistMaxList[2][1].Draw(DrawOpt)
+    HistMaxList[3][1].Draw(DrawOpt)
+    HistMaxList[4][1].Draw(DrawOpt)
 
 def setMyLegend(lPosition, lHistList):
     l = r.TLegend(lPosition[0], lPosition[1], lPosition[2], lPosition[3])
