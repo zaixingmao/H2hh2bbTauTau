@@ -6,12 +6,12 @@ from operator import itemgetter
 import os
 import enVars
 
-psfile="mTauTauJJ"
+psfile="mTauTauJJ_H260_tt4"
 
 #Title = "No Required b Tags, EleMuLooseVeto on Leg1"
-title = "mTauTauJJ"
+title = psfile
 xsNorm = False
-DrawSVMass = True
+DrawSVMass = False
 JetPtEtaCut = True
 CSVCut1 = -9999999#0.679
 CSVCut2 = -9999999#0.244
@@ -56,9 +56,9 @@ ZZChain = r.TChain("ttTreeFinal/eventTree")
 tool.addFiles(ch=HChain, dirName=signalLocation, knownEventNumber=signalEntries)
 tool.addFiles(ch=ttChain, dirName=ttLocation, knownEventNumber=ttEntries)
 tool.addFiles(ch=ZZChain, dirName=ZZLocation, knownEventNumber=ZZEntries)
-sigPreSelection = tool.addHistFirstBinFromFiles(dirName=signalLocation)+0.
-ttPreSelection = tool.addHistFirstBinFromFiles(dirName=ttLocation)+0.
-ZZPreSelection = tool.addHistFirstBinFromFiles(dirName=ZZLocation)+0.
+# sigPreSelection = tool.addHistFirstBinFromFiles(dirName=signalLocation)+0.
+# ttPreSelection = tool.addHistFirstBinFromFiles(dirName=ttLocation)+0.
+# ZZPreSelection = tool.addHistFirstBinFromFiles(dirName=ZZLocation)+0.
 mTauTauJJ_h = r.TH1F("mTauTauJJ_h"," ", 120, 100, 700)
 mTauTauJJ_tt = r.TH1F("mTauTauJJ_tt"," ", 120, 100, 700)
 mTauTauJJ_zz = r.TH1F("mTauTauJJ_zz"," ", 120, 100, 700)
@@ -111,7 +111,7 @@ for iChain, iLocation, iEntries, iHist in ChainHistList:
                     if iChain.met.at(iMass) < applyMETCut:
                         continue
                 diTauCandMass = iChain.svMass.at(iMass)
-                combinedTauTau.SetCoordinates(iChain.fullPt, iChain.fullEta, iChain.fullPhi, diTauCandMass)
+                combinedTauTau.SetCoordinates(iChain.svPt.at(iMass), iChain.svEta.at(iMass), iChain.svPhi.at(iMass), diTauCandMass)
                 if diTauCandMass < diTauCandMassCut[0] or diTauCandMass > diTauCandMassCut[1]:
                     continue
                 iHist.Fill((combinedTauTau + combinedJJ).mass())
