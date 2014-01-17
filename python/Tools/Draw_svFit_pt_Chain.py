@@ -180,14 +180,11 @@ legendHistos5 = [(tauTauPt_zz,"(ZZ) recoTauTau" ),
                  (tauTauPt_zz_svFit,"(ZZ) recoTauTau"),
                  (genHiggsPt_zz,"(ZZ) genHiggs")]
 
-tauTauPt_zz.SetTitle(title)
-tauTauPt_h1.SetTitle(title)
-tauTauPt_h1.GetYaxis().SetTitleOffset(1.2)
-tauTauPt_h2.SetTitle(title)
-tauTauPt_h2.GetYaxis().SetTitleOffset(1.2)
-tauTauPt_h3.SetTitle(title)
-tauTauPt_h3.GetYaxis().SetTitleOffset(1.2)
-tauTauPt_zz.GetYaxis().SetTitleOffset(1.3)
+genHiggsPt_h1.SetTitle(title)
+genHiggsPt_h2.SetTitle(title)
+genHiggsPt_h3.SetTitle(title)
+genHiggsPt_tt.SetTitle(title)
+genHiggsPt_zz.SetTitle(title)
 c = r.TCanvas("c","Test", 500, 800)
 
 psfile = os.environ['PYPATH']+'/Plots/'+psfile
