@@ -6,12 +6,11 @@ from operator import itemgetter
 import os
 import enVars
 
-psfile="tauTauPt"
+psfile="genHiggsPtvsTauTauPt"
 
 #Title = "No Required b Tags, EleMuLooseVeto on Leg1"
 title = psfile
 xsNorm = False
-DrawSVMass = False
 JetPtEtaCut = True
 CSVCut1 = -999999#0.679
 CSVCut2 = -999999#0.244
@@ -28,9 +27,7 @@ title = title + "_diTau_%d_%d" %(diTauCandMassCut[0], diTauCandMassCut[1])
 if useVarHMass:
     psfile += "_useHMass"
 
-title = "tauTauPt"
-if DrawSVMass: 
-    title += " SVFit"
+title = "genHiggsPtvsTauTauPt"
 
 if CSVCut1 == 0.679 and CSVCut2 == 0.244:
     title = title + "(1 medium, 1 loose b tag)"
@@ -42,7 +39,7 @@ psfile += "xsNorm" if xsNorm else ""
 if applyMETCut:
     psfile+="_met%d" %(applyMETCut) 
     title+="Met Cut %d" %(applyMETCut)
-psfile += ".eps" if not DrawSVMass else "_SVFitMass.eps"
+psfile += ".eps"
 
 r.gStyle.SetOptStat(0)
 signalEntries = enVars.signalEntries
@@ -65,36 +62,24 @@ tool.addFiles(ch=H3Chain, dirName=signal3Location, knownEventNumber=signalEntrie
 tool.addFiles(ch=ttChain, dirName=ttLocation, knownEventNumber=ttEntries)
 tool.addFiles(ch=ZZChain, dirName=ZZLocation, knownEventNumber=ZZEntries)
 
-genHiggsPt_h1 = r.TH1F("genHiggsPt_h1"," ", 36, 20, 200)
-genHiggsPt_h2 = r.TH1F("genHiggsPt_h2"," ", 36, 20, 200)
-genHiggsPt_h3 = r.TH1F("genHiggsPt_h3"," ", 36, 20, 200)
-genHiggsPt_tt = r.TH1F("genHiggsPt_tt"," ", 36, 20, 200)
-genHiggsPt_zz = r.TH1F("genHiggsPt_zz"," ", 36, 20, 200)
+genHiggsPtvsTauTauPt_h1 = r.TH2F("genHiggsPtvsTauTauPt_h1"," ", 36, 20, 200, 36, 20, 200)
+genHiggsPtvsTauTauPt_h2 = r.TH2F("genHiggsPtvsTauTauPt_h2"," ", 36, 20, 200, 36, 20, 200)
+genHiggsPtvsTauTauPt_h3 = r.TH2F("genHiggsPtvsTauTauPt_h3"," ", 36, 20, 200, 36, 20, 200)
+genHiggsPtvsTauTauPt_tt = r.TH2F("genHiggsPtvsTauTauPt_tt"," ", 36, 20, 200, 36, 20, 200)
+genHiggsPtvsTauTauPt_zz = r.TH2F("genHiggsPtvsTauTauPt_zz"," ", 36, 20, 200, 36, 20, 200)
 
-tauTauPt_h1 = r.TH1F("tauTauPt_h1"," ", 36,20, 200)
-tauTauPt_h2 = r.TH1F("tauTauPt_h2"," ", 36,20, 200)
-tauTauPt_h3 = r.TH1F("tauTauPt_h3"," ", 36,20, 200)
-tauTauPt_tt = r.TH1F("tauTauPt_tt"," ", 36,20, 200)
-tauTauPt_zz = r.TH1F("tauTauPt_zz"," ", 36,20, 200)
+genHiggsPtvsTauTauPt_h1_svFit = r.TH2F("genHiggsPtvsTauTauPt_h1_svFit"," ", 36, 20, 200, 36, 20, 200)
+genHiggsPtvsTauTauPt_h2_svFit = r.TH2F("genHiggsPtvsTauTauPt_h2_svFit"," ", 36, 20, 200, 36, 20, 200)
+genHiggsPtvsTauTauPt_h3_svFit = r.TH2F("genHiggsPtvsTauTauPt_h3_svFit"," ", 36, 20, 200, 36, 20, 200)
+genHiggsPtvsTauTauPt_tt_svFit = r.TH2F("genHiggsPtvsTauTauPt_tt_svFit"," ", 36, 20, 200, 36, 20, 200)
+genHiggsPtvsTauTauPt_zz_svFit = r.TH2F("genHiggsPtvsTauTauPt_zz_svFit"," ", 36, 20, 200, 36, 20, 200)
 
-tauTauPt_h1_svFit = r.TH1F("tauTauPt_h1_svFit"," ", 36,20, 200)
-tauTauPt_h2_svFit = r.TH1F("tauTauPt_h2_svFit"," ", 36,20, 200)
-tauTauPt_h3_svFit = r.TH1F("tauTauPt_h3_svFit"," ", 36,20, 200)
-tauTauPt_tt_svFit = r.TH1F("tauTauPt_tt_svFit"," ", 36,20, 200)
-tauTauPt_zz_svFit = r.TH1F("tauTauPt_zz_svFit"," ", 36,20, 200)
 
-#for normalization
-HistNameList1 = [tauTauPt_h1, tauTauPt_h1_svFit, genHiggsPt_h1]
-HistNameList2 = [tauTauPt_h2, tauTauPt_h2_svFit, genHiggsPt_h2]
-HistNameList3 = [tauTauPt_h3, tauTauPt_h3_svFit, genHiggsPt_h3]
-HistNameListtt = [tauTauPt_tt, tauTauPt_tt_svFit, genHiggsPt_tt]
-HistNameListZZ = [tauTauPt_zz, tauTauPt_zz_svFit, genHiggsPt_zz]
-
-ChainHistList = [(H1Chain, signal1Location, signalEntries, tauTauPt_h1, tauTauPt_h1_svFit, genHiggsPt_h1),
-                 (H2Chain, signal2Location, signalEntries, tauTauPt_h2, tauTauPt_h2_svFit, genHiggsPt_h2),
-                 (H3Chain, signal3Location, signalEntries, tauTauPt_h3, tauTauPt_h3_svFit, genHiggsPt_h3),
-                 (ttChain, ttLocation, ttEntries, tauTauPt_tt, tauTauPt_tt_svFit, genHiggsPt_tt),
-                 (ZZChain, ZZLocation, ZZEntries, tauTauPt_zz, tauTauPt_zz_svFit, genHiggsPt_zz)]
+ChainHistList = [(H1Chain, signal1Location, signalEntries, genHiggsPtvsTauTauPt_h1, genHiggsPtvsTauTauPt_h1_svFit),
+                 (H2Chain, signal2Location, signalEntries, genHiggsPtvsTauTauPt_h2, genHiggsPtvsTauTauPt_h2_svFit),
+                 (H3Chain, signal3Location, signalEntries, genHiggsPtvsTauTauPt_h3, genHiggsPtvsTauTauPt_h3_svFit),
+                 (ttChain, ttLocation, ttEntries, genHiggsPtvsTauTauPt_tt, genHiggsPtvsTauTauPt_tt_svFit),
+                 (ZZChain, ZZLocation, ZZEntries, genHiggsPtvsTauTauPt_zz, genHiggsPtvsTauTauPt_zz_svFit)]
 
 lvClass = r.Math.LorentzVector(r.Math.PtEtaPhiM4D('double'))
 tau1 = lvClass()
@@ -107,7 +92,7 @@ combinedJJ = lvClass()
 combinedTauTau = lvClass()
 vetoedHiggs = lvClass()
 
-for iChain, iLocation, iEntries, iHist1, iHist2, iHist3 in ChainHistList:
+for iChain, iLocation, iEntries, iHist1, iHist2 in ChainHistList:
     total = iEntries if iEntries else iChain.GetEntriesFast()
     key =  "found" if not iEntries else "has"
     print "[%s] %s %d events" %(iLocation, key, total)
@@ -141,86 +126,111 @@ for iChain, iLocation, iEntries, iHist1, iHist2, iHist3 in ChainHistList:
             combinedTauTau.SetCoordinates(iChain.svPt.at(iMass), iChain.svEta.at(iMass), iChain.svPhi.at(iMass), diTauCandMass)
             if diTauCandMass < diTauCandMassCut[0] or diTauCandMass > diTauCandMassCut[1]:
                 continue
-            iHist2.Fill((combinedTauTau).pt())
+            iHist2.Fill((combinedTauTau).pt(), vetoedHiggs.pt())
         for iTauPair in range(iChain.pt1.size()):
             if applyMETCut:
                 if iChain.met.at(iTauPair) < applyMETCut:
                     continue
             tau1.SetCoordinates(iChain.pt1.at(iTauPair), iChain.eta1.at(iTauPair), iChain.phi1.at(iTauPair), iChain.m1.at(iTauPair))
             tau2.SetCoordinates(iChain.pt2.at(iTauPair), iChain.eta2.at(iTauPair), iChain.phi2.at(iTauPair), iChain.m2.at(iTauPair))
-            iHist1.Fill((tau1+tau2).mass())
-            if vetoedHiggs.pt()>0:
-                iHist3.Fill(vetoedHiggs.pt())
+            iHist1.Fill((tau1+tau2).pt(), vetoedHiggs.pt())
 
     print ''
 
-intList1 = tool.unitNormHists(HistNameList1)
-intList2 = tool.unitNormHists(HistNameList2)
-intList3 = tool.unitNormHists(HistNameList3)
-intListtt = tool.unitNormHists(HistNameListtt)
-intListZZ = tool.unitNormHists(HistNameListZZ)
-title += "; tauTauPt; Unit Normalized"
+title += "; tauTauPt; genHiggsPt"
 
 
 legendPosition = (0.4, 0.75, .9, 0.85)#(0.45, 0.75, 0.88, 0.85)
 
-legendHistos1 = [(tauTauPt_h1,"(H260) recoTauTau" ),
-                 (tauTauPt_h1_svFit,"(H260_SVFit) recoTauTau"),
-                 (genHiggsPt_h1,"(H260) genHiggs")]
-legendHistos2 = [(tauTauPt_h2,"(H300) recoTauTau" ),
-                 (tauTauPt_h2_svFit,"(H300_SVFit) recoTauTau"),
-                 (genHiggsPt_h2,"(H300) genHiggs")]
-legendHistos3 = [(tauTauPt_h3,"(H350) recoTauTau" ),
-                 (tauTauPt_h3_svFit,"(H350_SVFit) recoTauTau"),
-                 (genHiggsPt_h3,"(H350) genHiggs")]
-legendHistos4 = [(tauTauPt_tt,"(t#bar{t}) recoTauTau" ),
-                 (tauTauPt_tt_svFit,"(t#bar{t}) recoTauTau"),
-                 (genHiggsPt_tt,"(t#bar{t}) genHiggs")]
-legendHistos5 = [(tauTauPt_zz,"(ZZ) recoTauTau" ),
-                 (tauTauPt_zz_svFit,"(ZZ) recoTauTau"),
-                 (genHiggsPt_zz,"(ZZ) genHiggs")]
+legendHistos1 = [(genHiggsPtvsTauTauPt_h1,"(H260) reco TauTau vs gen Higgs" )]
+legendHistos2 = [(genHiggsPtvsTauTauPt_h1_svFit,"(H260_SVFit) reco TauTau vs gen Higgs")]
+legendHistos3 = [(genHiggsPtvsTauTauPt_h2,"(H300) reco TauTau vs gen Higgs" )]
+legendHistos4 = [(genHiggsPtvsTauTauPt_h2_svFit,"(H300_SVFit) reco TauTau vs gen Higgs")]
+legendHistos5 = [(genHiggsPtvsTauTauPt_h3,"(H350) reco TauTau vs gen Higgs" )]
+legendHistos6 = [(genHiggsPtvsTauTauPt_h3_svFit,"(H350_SVFit) reco TauTau vs gen Higgs")]
+legendHistos7 = [(genHiggsPtvsTauTauPt_tt,"(t#bar{t}) reco TauTau vs gen Higgs" )]
+legendHistos8 = [(genHiggsPtvsTauTauPt_tt_svFit,"(t#bar{t}) reco TauTau vs gen Higgs")]
+legendHistos9 = [(genHiggsPtvsTauTauPt_zz,"(ZZ) reco TauTau vs gen Higgs" )]
+legendHistos10 = [(genHiggsPtvsTauTauPt_zz_svFit,"(ZZ) reco TauTau vs gen Higgs")]
 
-genHiggsPt_h1.SetTitle(title)
-genHiggsPt_h2.SetTitle(title)
-genHiggsPt_h3.SetTitle(title)
-genHiggsPt_tt.SetTitle(title)
-genHiggsPt_zz.SetTitle(title)
-c = r.TCanvas("c","Test", 500, 800)
+genHiggsPtvsTauTauPt_h1.SetTitle(title)
+genHiggsPtvsTauTauPt_h2.SetTitle(title)
+genHiggsPtvsTauTauPt_h3.SetTitle(title)
+genHiggsPtvsTauTauPt_h1_svFit.SetTitle(title)
+genHiggsPtvsTauTauPt_h2_svFit.SetTitle(title)
+genHiggsPtvsTauTauPt_h3_svFit.SetTitle(title)
+genHiggsPtvsTauTauPt_tt.SetTitle(title)
+genHiggsPtvsTauTauPt_zz.SetTitle(title)
+genHiggsPtvsTauTauPt_tt_svFit.SetTitle(title)
+genHiggsPtvsTauTauPt_zz_svFit.SetTitle(title)
+c = r.TCanvas("c","Test", 500, 1000)
 
 psfile = os.environ['PYPATH']+'/Plots/'+psfile
 ps = r.TPostScript(psfile,113)
 
-c.Divide(2,3)
+c.Divide(2,5)
 c.cd(1)
 r.gPad.SetTickx()
 r.gPad.SetTicky()
-tool.setDraw3Hists(hist1=tauTauPt_h1, hist2=tauTauPt_h1_svFit, fixHist=genHiggsPt_h1,drawColor=4)
+genHiggsPtvsTauTauPt_h1.Draw()
 l1 = tool.setMyLegend(lPosition=legendPosition, lHistList=legendHistos1)
 l1.Draw("same")
 c.cd(2)
 r.gPad.SetTickx()
 r.gPad.SetTicky()
-tool.setDraw3Hists(hist1=tauTauPt_h2, hist2=tauTauPt_h2_svFit, fixHist=genHiggsPt_h2, drawColor=6)
+genHiggsPtvsTauTauPt_h1_svFit.Draw()
 l2 = tool.setMyLegend(lPosition=legendPosition, lHistList=legendHistos2)
 l2.Draw("same")
 c.cd(3)
 r.gPad.SetTickx()
 r.gPad.SetTicky()
-tool.setDraw3Hists(hist1=tauTauPt_h3, hist2=tauTauPt_h3_svFit, fixHist=genHiggsPt_h3, drawColor=8)
+genHiggsPtvsTauTauPt_h2.Draw()
 l3 = tool.setMyLegend(lPosition=legendPosition, lHistList=legendHistos3)
 l3.Draw("same")
 c.cd(4)
 r.gPad.SetTickx()
 r.gPad.SetTicky()
-tool.setDraw3Hists(hist1=tauTauPt_tt, hist2=tauTauPt_tt_svFit, fixHist=genHiggsPt_tt, drawColor=2)
+genHiggsPtvsTauTauPt_h2_svFit.Draw()
 l4 = tool.setMyLegend(lPosition=legendPosition, lHistList=legendHistos4)
 l4.Draw("same")
 c.cd(5)
 r.gPad.SetTickx()
 r.gPad.SetTicky()
-tool.setDraw3Hists(hist1=tauTauPt_zz, hist2=tauTauPt_zz_svFit, fixHist=genHiggsPt_zz, drawColor=1)
+genHiggsPtvsTauTauPt_h3.Draw()
 l5 = tool.setMyLegend(lPosition=legendPosition, lHistList=legendHistos5)
 l5.Draw("same")
+c.cd(6)
+r.gPad.SetTickx()
+r.gPad.SetTicky()
+genHiggsPtvsTauTauPt_h3_svFit.Draw()
+l6 = tool.setMyLegend(lPosition=legendPosition, lHistList=legendHistos6)
+l6.Draw("same")
+
+c.cd(7)
+r.gPad.SetTickx()
+r.gPad.SetTicky()
+genHiggsPtvsTauTauPt_tt.Draw()
+l7 = tool.setMyLegend(lPosition=legendPosition, lHistList=legendHistos7)
+l7.Draw("same")
+c.cd(8)
+r.gPad.SetTickx()
+r.gPad.SetTicky()
+genHiggsPtvsTauTauPt_tt_svFit.Draw()
+l8 = tool.setMyLegend(lPosition=legendPosition, lHistList=legendHistos8)
+l8.Draw("same")
+
+c.cd(9)
+r.gPad.SetTickx()
+r.gPad.SetTicky()
+genHiggsPtvsTauTauPt_zz.Draw()
+l9 = tool.setMyLegend(lPosition=legendPosition, lHistList=legendHistos9)
+l9.Draw("same")
+c.cd(10)
+r.gPad.SetTickx()
+r.gPad.SetTicky()
+genHiggsPtvsTauTauPt_zz_svFit.Draw()
+l10 = tool.setMyLegend(lPosition=legendPosition, lHistList=legendHistos10)
+l10.Draw("same")
 
 ps.Close()
 
