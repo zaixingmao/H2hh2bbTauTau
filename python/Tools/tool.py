@@ -3,6 +3,7 @@ import sys
 import ROOT as r
 import time
 from operator import itemgetter
+import os
 
 lvClass = r.Math.LorentzVector(r.Math.PtEtaPhiM4D('double'))
 b1 = lvClass()
@@ -83,17 +84,22 @@ def printProcessStatus(iCurrent, total, processName = 'Foo process'):
     sys.stdout.write("\r%s completed: %0.f" %(processName, round(AddedPercent,2)*100) + "%")
     sys.stdout.flush()
 
+def findFilesInDir(dirName):
+    for iFile in os.listdir(dirName):
+        fName = dirName + '/' + iFile
+        if fName.endswith(".root"):
+            print fName
 
-def addFiles(ch, dirName, knownEventNumber):
+def addFiles(ch, dirName, knownEventNumber, maxFileNumber=-1):
     added = 0.
-    dir = r.TSystemDirectory(dirName, dirName)
-    files = dir.GetListOfFiles()
-    totalAmount = files.GetSize() - 2.
-    for iFile in files:
-        fName = dirName + '/' + iFile.GetName()
-        if (not iFile.IsDirectory()) and fName.endswith(".root"):
+    totalAmount = len(os.listdir(dirName))
+    for iFile in os.listdir(dirName):
+        fName = dirName + '/' + iFile
+        if fName.endswith(".root"):
             ch.Add(fName, knownEventNumber)
             added+=1
+            if maxFileNumber-added == 0:
+                break
             printProcessStatus(iCurrent=added, total=totalAmount, processName = 'Adding files from [%s]' %dirName)
     print ""
     return added
@@ -116,7 +122,7 @@ def xsNormHists(HistNameList, xsList):
             iHist.Scale(xsList[i]/integral*20)
         i+=1
 
-def setDraw2Hists(hist1, hist2, drawColor=1):
+def setDraw2Hists(hist1, hist2, drawColor=1, DrawOpt = ""):
 
     hist1.SetLineWidth(1)
     hist1.SetLineStyle(2)
@@ -132,8 +138,28 @@ def setDraw2Hists(hist1, hist2, drawColor=1):
     histMaxList = sorted(histMaxList, key=itemgetter(0), reverse=True)
     #draw from the highest histogram
 
-    histMaxList[0][1].Draw()
-    histMaxList[1][1].Draw("same")
+    histMaxList[0][1].Draw(DrawOpt)
+    histMaxList[1][1].Draw("same %s" %(DrawOpt))
+
+def setDraw2Hists(hist1, hist2, drawColor1=1, drawColor2=1, DrawOpt = ""):
+
+    hist1.SetLineWidth(1)
+    hist1.SetLineStyle(2)
+    hist2.SetFillStyle(0)
+    hist1.SetLineColor(drawColor1)
+
+    hist2.SetLineWidth(1)
+    hist2.SetFillStyle(3944)
+    hist2.SetFillColor(drawColor2)
+    hist2.SetLineColor(drawColor2)
+
+    histMaxList = [(hist1.GetMaximum(), hist1), (hist2.GetMaximum(), hist2)]
+    histMaxList = sorted(histMaxList, key=itemgetter(0), reverse=True)
+    #draw from the highest histogram
+
+    histMaxList[0][1].Draw(DrawOpt)
+    histMaxList[1][1].Draw("same %s" %(DrawOpt))
+
 
 def setDraw3Hists(hist1, hist2, fixHist, drawColor=1):
 
