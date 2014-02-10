@@ -2,12 +2,11 @@
 
 import ROOT as r
 import os
+import enVars
+import tool
 
-ChainHistList = [('a', '1'),
-                 ('b', '2'),
-                 ('c', '3')]
+signalLocation = enVars.signalLocation
+signalEntries = 0
 
-print "size: %d" %(len(ChainHistList))
 
-for i in range(3):
-    print ChainHistList[0][0]
+print tool.addHistFirstBinFromFiles(dirName=signalLocation)

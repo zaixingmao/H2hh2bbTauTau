@@ -28,4 +28,5 @@ sampleLocations = [("H2hh260",  "/hdfs/store/user/zmao/H2hh260_3-SUB-TT"),
                    ("H2hh300",  "/hdfs/store/user/zmao/H2hh300_3-SUB-TT"),
                    ("H2hh350",  "/hdfs/store/user/zmao/H2hh350_3-SUB-TT"),
                    ("tt", "/hdfs/store/user/zmao/tt_3-SUB-TT"),
-                   ("ZZ", "/hdfs/store/user/zmao/ZZ_3-SUB-TT")]
+                   ("ZZ", "/hdfs/store/user/zmao/ZZ_3-SUB-TT")
+                  ]
