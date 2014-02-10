@@ -20,9 +20,9 @@ def findFullMass(jetsList = [], sv4Vec = ''):
     jetsList = sorted(jetsList, key=itemgetter(0), reverse=True)
     combinedJJ = jetsList[0][1]+jetsList[1][1]
     if jetsList[1][0] > 0 and jetsList[0][1].pt() > 0 and jetsList[1][1].pt() > 0:
-      return combinedJJ.pt(), combinedJJ.eta(), combinedJJ.phi(), combinedJJ.mass(), (combinedJJ+sv4Vec).mass()
+      return combinedJJ.pt(), combinedJJ.eta(), combinedJJ.phi(), combinedJJ.mass(), jetsList[0][0], jetsList[1][0], (combinedJJ+sv4Vec).mass()
     else:
-        return -1, -1, -1, -1, -1
+        return -1, -1, -1, -1, -1, -1, -1
 
 r.gStyle.SetOptStat(0)
 
@@ -48,6 +48,8 @@ for iSample in range(len(sampleLocations)):
     ptJJ = array('f', [0.])
     etaJJ = array('f', [0.])
     phiJJ = array('f', [0.])
+    CSVJ1 = array('f', [0.])
+    CSVJ2 = array('f', [0.])
     iChain.LoadTree(0)
     iTree = iChain.GetTree().CloneTree(0)
     iFile = r.TFile("%s.root" %(sampleLocations[iSample][0]),"recreate")
@@ -56,6 +58,8 @@ for iSample in range(len(sampleLocations)):
     iTree.Branch("etaJJ", etaJJ, "etaJJ/F")
     iTree.Branch("phiJJ", phiJJ, "phiJJ/F")
     iTree.Branch("ptJJ", ptJJ, "ptJJ/F")
+    iTree.Branch("CSVJ1", CSVJ1, "CSVJ1/F")
+    iTree.Branch("CSVJ2", CSVJ2, "CSVJ2/F")
 
     counter = 0
 
@@ -69,7 +73,7 @@ for iSample in range(len(sampleLocations)):
                     (iChain.J3CSVbtag, J3.SetCoordinates(iChain.J3Pt, iChain.J3Eta, iChain.J3Phi, iChain.J3Mass)),
                     (iChain.J4CSVbtag, J4.SetCoordinates(iChain.J4Pt, iChain.J4Eta, iChain.J4Phi, iChain.J4Mass))]
         sv4Vec.SetCoordinates(iChain.svPt.at(0), iChain.svEta.at(0), iChain.svPhi.at(0), iChain.svMass.at(0))
-        ptJJ[0], etaJJ[0], phiJJ[0], mJJ[0], fullMass[0] = findFullMass(jetsList=jetsList, sv4Vec=sv4Vec) 
+        ptJJ[0], etaJJ[0], phiJJ[0], mJJ[0], CSVJ1[0], CSVJ2[0], fullMass[0] = findFullMass(jetsList=jetsList, sv4Vec=sv4Vec) 
         iTree.Fill()
         counter += 1
         tool.printProcessStatus(iEntry, nEntires, 'Saving to file %s.root' %(sampleLocations[iSample][0]))
