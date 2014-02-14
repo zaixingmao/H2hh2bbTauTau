@@ -90,7 +90,7 @@ def findFilesInDir(dirName):
         if fName.endswith(".root"):
             print fName
 
-def addFiles(ch, dirName, knownEventNumber, maxFileNumber=-1):
+def addFiles(ch, dirName, knownEventNumber, maxFileNumber=-1, printTotalEvents = False):
     added = 0.
     totalAmount = len(os.listdir(dirName))
     for iFile in os.listdir(dirName):
@@ -101,8 +101,13 @@ def addFiles(ch, dirName, knownEventNumber, maxFileNumber=-1):
             if maxFileNumber-added == 0:
                 break
             printProcessStatus(iCurrent=added, total=totalAmount, processName = 'Adding files from [%s]' %dirName)
-    print ""
-    return added
+    if printTotalEvents:
+        nEntries = ch.GetEntries()
+        print "  -- found %d events" %(nEntries)
+        return nEntries
+    else:
+        print " "
+        return added
 
 def unitNormHists(HistNameList):
     integralList = []
