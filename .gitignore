@@ -57,3 +57,4 @@ MC/
 # Local test files #
 ######################
 python/Tools/test.py
+python/Tools/enVars.py
