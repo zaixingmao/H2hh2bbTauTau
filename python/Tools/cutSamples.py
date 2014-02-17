@@ -35,11 +35,11 @@ ZZEntries = enVars.ZZEntries
 #*******Get Sample Name and Locations******
 sampleLocations = enVars.sampleLocations
 
-varList = ['EVENT', 'HMass', 'svMass', 'svPt', 'svEta', 'svPhi', 'J1Pt', 'J1Eta','J1Phi', 'J1Mass', 'NBTags', 'iso1', 'iso2', 'mJJ', 'J2Pt', 'J2Eta','J2Phi', 'J2Mass',
-           'J3Pt', 'J3Eta','J3Phi', 'J3Mass', 'J4Pt', 'J4Eta','J4Phi', 'J4Mass', 'J1CSVbtag', 'J2CSVbtag', 'J3CSVbtag', 'J4CSVbtag', 'pt1', 'eta1', 'phi1', 'pt2', 'eta2', 'phi2']
+varList = ['EVENT', 'HMass', 'svMass', 'svPt', 'svEta', 'svPhi', 'J1Pt', 'J1Eta','J1Phi', 'J1Mass', 'NBTags', 'iso1', 'iso2', 'mJJ', 'J2Pt', 'J2Eta','J2Phi', 'J2Mass','pZeta', 'pZ',
+           'pZV', 'J3Pt', 'J3Eta','J3Phi', 'J3Mass', 'J4Pt', 'J4Eta','J4Phi', 'J4Mass', 'J1CSVbtag', 'J2CSVbtag', 'J3CSVbtag', 'J4CSVbtag', 'pt1', 'eta1', 'phi1', 'pt2', 'eta2', 'phi2']
 
 for iSample, iLocation in sampleLocations:
-    iChain = r.TChain("ttTreeFinal/eventTree")
+    iChain = r.TChain("ttTreeIni/eventTree")
     nEntries = tool.addFiles(ch=iChain, dirName=iLocation, knownEventNumber=signalEntries, printTotalEvents=True)
     iChain.SetBranchStatus("*",0)
     for iVar in range(len(varList)):

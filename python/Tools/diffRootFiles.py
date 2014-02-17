@@ -3,6 +3,7 @@ import ROOT as r
 import optparse
 import tool
 
+
 r.gROOT.SetBatch(True)  # to suppress canvas pop-outs
 
 def opts():
@@ -21,17 +22,17 @@ options = opts()
 f1 = r.TFile(options.file1)
 f2 = r.TFile(options.file2)
 tree1 = f1.Get("eventTree")
-tree1.SetLineColor(4)
-tree1.SetFillColor(4)
-tree1.SetFillStyle(3744)
+tree1.SetLineColor(r.kAzure+9)
+tree1.SetFillColor(r.kAzure+9)
+tree1.SetFillStyle(3003)
 tree2 = f2.Get("eventTree")
 tree2.SetLineColor(2)
 tree2.SetLineWidth(2)
 tree2.SetLineStyle(2)
 tHist1 = r.TH1F()
-tHist1.SetLineColor(4)
-tHist1.SetFillColor(4)
-tHist1.SetFillStyle(3744) 
+tHist1.SetLineColor(r.kAzure+9)
+tHist1.SetFillColor(r.kAzure+9)
+tHist1.SetFillStyle(3003) 
 tHist2 = r.TH1F() 
 tHist2.SetLineColor(2)
 tHist2.SetLineWidth(2)

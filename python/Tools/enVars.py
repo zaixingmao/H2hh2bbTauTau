@@ -24,9 +24,18 @@ signal1Location = "/hdfs/store/user/zmao/H2hh260_3-SUB-TT"
 signal2Location = "/hdfs/store/user/zmao/H2hh300_3-SUB-TT"
 signal3Location = "/hdfs/store/user/zmao/H2hh350_3-SUB-TT"
 
-sampleLocations = [("H2hh260",  "/hdfs/store/user/zmao/H2hh260_3-SUB-TT"),
-                   ("H2hh300",  "/hdfs/store/user/zmao/H2hh300_3-SUB-TT"),
-                   ("H2hh350",  "/hdfs/store/user/zmao/H2hh350_3-SUB-TT"),
-                   ("tt", "/hdfs/store/user/zmao/tt_3-SUB-TT"),
-                   ("ZZ", "/hdfs/store/user/zmao/ZZ_3-SUB-TT")
+#sampleLocations = [("H2hh260",  "/hdfs/store/user/zmao/H2hh260_3-SUB-TT"),
+#                   ("H2hh300",  "/hdfs/store/user/zmao/H2hh300_3-SUB-TT"),
+#                   ("H2hh350",  "/hdfs/store/user/zmao/H2hh350_3-SUB-TT"),
+#                   ("tt", "/hdfs/store/user/zmao/tt_3-SUB-TT"),
+#                   ("ZZ", "/hdfs/store/user/zmao/ZZ_3-SUB-TT")
+#                  ]
+
+sampleLocations = [("H2hh260_6",  "/hdfs/store/user/zmao/H2hh260_6-SUB-TT"),
+                   ("H2hh300_6",  "/hdfs/store/user/zmao/H2hh300_6-SUB-TT"),
+                   ("H2hh350_6",  "/hdfs/store/user/zmao/H2hh350_6-SUB-TT"),
+                   ("tt_6", "/hdfs/store/user/zmao/tt_6-SUB-TT"),
+                   ("ZZ_6", "/hdfs/store/user/zmao/ZZ_6-SUB-TT")
                   ]
+
+vecVarList = ['pt1', 'pt2', 'iso1', 'iso2', 'eta1', 'eta2', 'phi1', 'phi2', 'svEta', 'svMass', 'svPhi', 'svPt']
