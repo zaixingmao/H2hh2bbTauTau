@@ -90,11 +90,13 @@ def findFilesInDir(dirName):
         if fName.endswith(".root"):
             print fName
 
-def addFiles(ch, dirName, knownEventNumber, maxFileNumber=-1, printTotalEvents = False):
+def addFiles(ch, dirName, knownEventNumber, maxFileNumber=-1, printTotalEvents = False, blackList = []):
     added = 0.
     totalAmount = len(os.listdir(dirName))
     for iFile in os.listdir(dirName):
         fName = dirName + '/' + iFile
+        if fName in blackList:
+            continue
         if fName.endswith(".root"):
             ch.Add(fName, knownEventNumber)
             added+=1
@@ -307,3 +309,16 @@ def addHistFromFiles(dirName, histName, hist, xAxisLabels = ['']):
             added+=1.
             printProcessStatus(iCurrent=added, total=totalAmount, processName = 'Adding Histogram from files in [%s]' %dirName)
     print ""
+
+def reWeightROOTFile(fileName, treeName, weight = 1.0):
+    oldFile = r.TFile(fileName, "READ")
+    tree = oldFile.Get(treeName)
+    newFileName = './' + fileName[fileName.rfind('/'): fileName.find('.')] + "_reweighted.root"
+    newFile = r.TFile(newFileName, "NEW")
+    newTree = tree.CloneTree(-1, 'fast')
+    entries = tree.GetEntries()
+    newTree.SetWeight(weight/entries)
+    newFile.Write()
+    newFile.Close()
+    oldFile.Close()
+    return newFileName
