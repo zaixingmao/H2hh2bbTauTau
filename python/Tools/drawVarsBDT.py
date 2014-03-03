@@ -7,7 +7,7 @@ r.gStyle.SetOptStat(0)
 
 #*******Open input file and find associated tree*******
 
-trainMass = 260
+trainMass = 350
 iFileName = '/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_15/src/TMVA-v4.2.0/test/TMVA_%s.root' %(trainMass)
 iFile = r.TFile(iFileName)
 tree = iFile.Get("TestTree")

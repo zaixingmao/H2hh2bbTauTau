@@ -24,11 +24,11 @@ signal1Location = "/hdfs/store/user/zmao/H2hh260_3-SUB-TT"
 signal2Location = "/hdfs/store/user/zmao/H2hh300_3-SUB-TT"
 signal3Location = "/hdfs/store/user/zmao/H2hh350_3-SUB-TT"
 
-sampleLocations = [("H2hh260_7",  "/hdfs/store/user/zmao/H2hh260_7-SUB-TT"),
-#                    ("H2hh300_7",  "/hdfs/store/user/zmao/H2hh300_7-SUB-TT"),
-#                    ("H2hh350_7",  "/hdfs/store/user/zmao/H2hh350_7-SUB-TT"),
-#                    ("tt_7", "/hdfs/store/user/zmao/tt_7-SUB-TT"),
-#                    ("ZZ_7", "/hdfs/store/user/zmao/ZZ_7-SUB-TT")
+sampleLocations = [("H2hh260_new3",  "/hdfs/store/user/zmao/H2hh260_new3-SUB-TT"),
+                   ("H2hh300_new",  "/hdfs/store/user/zmao/H2hh300_new-SUB-TT"),
+                   ("H2hh350_new",  "/hdfs/store/user/zmao/H2hh350_new-SUB-TT"),
+#                     ("tt_new", "/hdfs/store/user/zmao/tt_new-SUB-TT"),
+#                     ("ZZ_new", "/hdfs/store/user/zmao/ZZ_new-SUB-TT")
                   ]
 
 #sampleLocations = [("H2hh350_test", "/hdfs/store/user/zmao/H2hh350_test-SUB-TT")

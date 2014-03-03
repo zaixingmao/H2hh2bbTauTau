@@ -17,10 +17,10 @@ options = opts()
 
 trainMass = options.trainMass
 
-fileList = [('500 Events', '/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_15/src/TMVA-v4.2.0/test/TMVA_H2hh%s_7_500.root' %(trainMass)),
-            ('1000 Events', '/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_15/src/TMVA-v4.2.0/test/TMVA_H2hh%s_7_1000.root' %(trainMass)),
-            ('1500 Events', '/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_15/src/TMVA-v4.2.0/test/TMVA_H2hh%s_7_1500.root' %(trainMass)),
-            ('2000 Events', '/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_15/src/TMVA-v4.2.0/test/TMVA_H2hh%s_7_2000.root' %(trainMass))]
+fileList = [('1000 Events', '/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_15/src/TMVA-v4.2.0/test/TMVA_H2hh%s_new_1000.root' %(trainMass)),
+            ('2000 Events', '/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_15/src/TMVA-v4.2.0/test/TMVA_H2hh%s_new_2000.root' %(trainMass)),
+            ('3000 Events', '/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_15/src/TMVA-v4.2.0/test/TMVA_H2hh%s_new_3000.root' %(trainMass)),
+            ('4000 Events', '/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_15/src/TMVA-v4.2.0/test/TMVA_H2hh%s_new_4000.root' %(trainMass))]
 
 branchName = "Method_BDT/BDT/MVA_BDT_rejBvsS"
 psfile="BDT_diff_%s.eps" %(trainMass)
