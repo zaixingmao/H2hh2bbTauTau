@@ -15,8 +15,7 @@ ZZEntries = 0
 #ttEntries = 25633
 #ZZEntries = 5358
 
-signalLocation = "/hdfs/store/user/zmao/H2hh260-SUB-TT"
-signalLocation = "/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_7/src/UWAnalysis/CRAB/LTau"
+signalLocation = "/hdfs/store/user/zmao/H2hh2-SUB-TT"
 ttLocation = "/hdfs/store/user/zmao/tt_3-SUB-TT"
 ZZLocation = "/hdfs/store/user/zmao/ZZ_3-SUB-TT"
 
@@ -24,11 +23,11 @@ signal1Location = "/hdfs/store/user/zmao/H2hh260_3-SUB-TT"
 signal2Location = "/hdfs/store/user/zmao/H2hh300_3-SUB-TT"
 signal3Location = "/hdfs/store/user/zmao/H2hh350_3-SUB-TT"
 
-sampleLocations = [("H2hh260_new3",  "/hdfs/store/user/zmao/H2hh260_new3-SUB-TT"),
-                   ("H2hh300_new",  "/hdfs/store/user/zmao/H2hh300_new-SUB-TT"),
-                   ("H2hh350_new",  "/hdfs/store/user/zmao/H2hh350_new-SUB-TT"),
-#                     ("tt_new", "/hdfs/store/user/zmao/tt_new-SUB-TT"),
-#                     ("ZZ_new", "/hdfs/store/user/zmao/ZZ_new-SUB-TT")
+sampleLocations = [("H2hh260",  "/hdfs/store/user/zmao/H2hh260_noSign-SUB-TT"),
+                    ("H2hh300",  "/hdfs/store/user/zmao/H2hh300_noSign-SUB-TT"),
+                    ("H2hh350",  "/hdfs/store/user/zmao/H2hh350_noSign-SUB-TT"),
+                    ("tt", "/hdfs/store/user/zmao/tt_new_noSign-SUB-TT"),
+                    ("ZZ", "/hdfs/store/user/zmao/ZZ_noSign-SUB-TT")
                   ]
 
 #sampleLocations = [("H2hh350_test", "/hdfs/store/user/zmao/H2hh350_test-SUB-TT")

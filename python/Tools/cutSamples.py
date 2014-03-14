@@ -48,12 +48,14 @@ ZZEntries = enVars.ZZEntries
 sampleLocations = enVars.sampleLocations
 
 varList = ['EVENT', 'HMass', 'svMass', 'svPt', 'svEta', 'svPhi', 'J1Pt', 'J1Eta','J1Phi', 'J1Mass', 'NBTags', 'iso1', 'iso2', 'mJJ', 'J2Pt', 'J2Eta','J2Phi', 'J2Mass','pZeta', 'pZ', 'm1', 'm2',
-           'pZV', 'J3Pt', 'J3Eta','J3Phi', 'J3Mass', 'J4Pt', 'J4Eta','J4Phi', 'J4Mass', 'J1CSVbtag', 'J2CSVbtag', 'J3CSVbtag', 'J4CSVbtag', 'pt1', 'eta1', 'phi1', 'pt2', 'eta2', 'phi2', 'met']
+           'pZV', 'J3Pt', 'J3Eta','J3Phi', 'J3Mass', 'J4Pt', 'J4Eta','J4Phi', 'J4Mass', 'J1CSVbtag', 'J2CSVbtag', 'J3CSVbtag', 'J4CSVbtag', 'pt1', 'eta1', 'phi1', 'pt2', 'eta2', 'phi2', 'met', 
+           'charge1', 'charge2', 'genBPt', 'genBEta', 'genBPhi', 'genTauPt', 'genTauEta', 'genTauPhi'
+          ]
 
 blackList = enVars.corruptedROOTfiles
 
 for iSample, iLocation in sampleLocations:
-    iChain = r.TChain("ttTreeFinal/eventTree")
+    iChain = r.TChain("ttTreeBeforeChargeCut/eventTree")
     nEntries = tool.addFiles(ch=iChain, dirName=iLocation, knownEventNumber=signalEntries, printTotalEvents=True, blackList=blackList)
     iChain.SetBranchStatus("*",0)
     for iVar in range(len(varList)):
@@ -76,8 +78,8 @@ for iSample, iLocation in sampleLocations:
     pZV_new2 = array('f', [0.])
     iChain.LoadTree(0)
     iTree = iChain.GetTree().CloneTree(0)
-    iSample = iSample + '_%s' %('all' if options.nevents == -1 else options.nevents)
-    iFile = r.TFile("%s.root" %(iSample, ),"recreate")
+    iSample = iSample + '_%s' %('all' if options.nevents == "-1" else options.nevents)
+    iFile = r.TFile("%s.root" %(iSample),"recreate")
     iTree.Branch("fMass", fullMass, "fMass/F")
     iTree.Branch("mJJ", mJJ, "mJJ/F")
     iTree.Branch("etaJJ", etaJJ, "etaJJ/F")
@@ -103,6 +105,9 @@ for iSample, iLocation in sampleLocations:
             break
         if iChain.svMass.size() == 0:
             continue
+        if not tool.calc(iChain):
+            continue
+
         jetsList = [(iChain.J1CSVbtag, J1.SetCoordinates(iChain.J1Pt, iChain.J1Eta, iChain.J1Phi, iChain.J1Mass)),
                     (iChain.J2CSVbtag, J2.SetCoordinates(iChain.J2Pt, iChain.J2Eta, iChain.J2Phi, iChain.J2Mass)),
                     (iChain.J3CSVbtag, J3.SetCoordinates(iChain.J3Pt, iChain.J3Eta, iChain.J3Phi, iChain.J3Mass)),

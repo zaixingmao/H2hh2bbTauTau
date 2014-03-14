@@ -202,8 +202,8 @@ def setDrawHists(sigHist, ttHist, ZZHist, DrawOpt = ""):
     sigHist.SetLineColor(4)
 
     ttHist.SetLineWidth(2)
-    ttHist.SetFillStyle(3001)
-    ttHist.SetFillColor(2)
+#     ttHist.SetFillStyle(3001)
+#     ttHist.SetFillColor(2)
     ttHist.SetLineColor(2)
     ttMax = ttHist.GetMaximum() 
 
@@ -266,6 +266,35 @@ def setDrawHists2(sigHist1, sigHist2, sigHist3, ttHist, ZZHist, DrawOpt = ""):
     HistMaxList[3][1].Draw(DrawOpt)
     HistMaxList[4][1].Draw(DrawOpt)
 
+def setDrawHists4(hist1, hist2, hist3, hist4, DrawOpt = ""):
+
+    hist1.SetLineWidth(2)
+    hist1.SetLineStyle(2)
+    hist1.SetLineColor(63)
+
+    hist2.SetLineWidth(2)
+    hist2.SetLineStyle(2)
+    hist2.SetLineColor(6)
+
+    hist3.SetLineWidth(2)
+    hist3.SetLineColor(4)
+
+    hist4.SetLineWidth(2)
+    hist4.SetLineColor(2)
+    
+    HistMaxList = [(hist1.GetMaximum(), hist1),
+                   (hist2.GetMaximum(), hist2),
+                   (hist3.GetMaximum(), hist3),
+                   (hist4.GetMaximum(), hist4)]
+    HistMaxList = sorted(HistMaxList, key=itemgetter(0), reverse=True)
+    #draw from the highest histogram
+
+    HistMaxList[0][1].Draw(DrawOpt)
+    DrawOpt = "same" + DrawOpt
+    HistMaxList[1][1].Draw(DrawOpt)
+    HistMaxList[2][1].Draw(DrawOpt)
+    HistMaxList[3][1].Draw(DrawOpt)
+
 def setMyLegend(lPosition, lHistList):
     l = r.TLegend(lPosition[0], lPosition[1], lPosition[2], lPosition[3])
     l.SetFillStyle(0)
@@ -322,3 +351,10 @@ def reWeightROOTFile(fileName, treeName, weight = 1.0):
     newFile.Close()
     oldFile.Close()
     return newFileName
+
+def calc(iChain):# 
+#     if  iChain.pt2.at(0) > 40 and iChain.J1Pt > 30 and abs(iChain.J1Eta) < 3.1:
+#         return True
+#     else:
+#         return False
+    return True

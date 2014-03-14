@@ -23,7 +23,7 @@ fileList = [('1000 Events', '/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_15/src/TMVA-v
             ('4000 Events', '/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_15/src/TMVA-v4.2.0/test/TMVA_H2hh%s_new_4000.root' %(trainMass))]
 
 branchName = "Method_BDT/BDT/MVA_BDT_rejBvsS"
-psfile="BDT_diff_%s.eps" %(trainMass)
+psfile="BDT_diff_%s.pdf" %(trainMass)
 titles = "Background rejection versus Signal efficiency (mH%s); Signal efficiency; Background rejection" %(trainMass)
 
 colorList = [r.kGreen, r.kRed, r.kBlue, 1]
@@ -43,7 +43,7 @@ for i in range(len(fileList)):
 legendPosition = (0.25, 0.3, 0.5, 0.47)
 index = 0
 c = r.TCanvas("c","Test", 800, 600);
-ps = r.TPostScript(psfile,112);
+ps = r.TPDF(psfile,112)
 r.gPad.SetTickx()
 r.gPad.SetTicky()
 
