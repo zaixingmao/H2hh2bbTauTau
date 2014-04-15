@@ -18,7 +18,7 @@ r.gStyle.SetOptStat(0)
 
 trainMass = 260
 
-iFileName = '/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_15/src/TMVA-v4.2.0/test/TMVA_%s.root' %(trainMass)
+iFileName = '/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_15/src/TMVA-v4.2.0/test/TMVA%s.root' %(trainMass)
 iFile = r.TFile(iFileName)
 tree = iFile.Get("TestTree")
 listBranch = tree.GetListOfBranches()

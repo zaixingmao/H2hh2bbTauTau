@@ -17,10 +17,9 @@ options = opts()
 
 trainMass = options.trainMass
 
-fileList = [('1000 Events', '/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_15/src/TMVA-v4.2.0/test/TMVA_H2hh%s_new_1000.root' %(trainMass)),
-            ('2000 Events', '/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_15/src/TMVA-v4.2.0/test/TMVA_H2hh%s_new_2000.root' %(trainMass)),
-            ('3000 Events', '/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_15/src/TMVA-v4.2.0/test/TMVA_H2hh%s_new_3000.root' %(trainMass)),
-            ('4000 Events', '/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_15/src/TMVA-v4.2.0/test/TMVA_H2hh%s_new_4000.root' %(trainMass))]
+fileList = [('H2hh260', '/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_15/src/TMVA-v4.2.0/test/TMVA260.root'),
+            ('H2hh300', '/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_15/src/TMVA-v4.2.0/test/TMVA300.root'),
+            ('H2hh350', '/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_15/src/TMVA-v4.2.0/test/TMVA350.root'),]
 
 branchName = "Method_BDT/BDT/MVA_BDT_rejBvsS"
 psfile="BDT_diff_%s.pdf" %(trainMass)
@@ -50,7 +49,7 @@ r.gPad.SetTicky()
 r.gPad.SetGrid()
 
 tmpHist[0].SetTitle(titles)
-tmpHist[3].SetLineStyle(2)
+# tmpHist[3].SetLineStyle(2)
 tmpHist[0].SetMaximum(1.05)
 tmpHist[0].SetMinimum(0.1)
 tmpHist[0].Draw()

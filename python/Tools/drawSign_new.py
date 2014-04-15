@@ -6,11 +6,14 @@ import math
 import optparse
 lvClass = r.Math.LorentzVector(r.Math.PtEtaPhiM4D('double'))
 
+dR_tauEleMu_max = 0.2
+dR_b_max = 0.5
 
 def opts():
     parser = optparse.OptionParser()
     parser.add_option("--i", dest="inputFile", default = False, help="")
     parser.add_option("--t", dest="title", default = False, help="")
+    parser.add_option("--o", dest="option", default = False, help="")
     options, args = parser.parse_args()
     return options
 
@@ -28,48 +31,197 @@ def findDR(genPt, genEta, genPhi, pt, eta, phi):
             dR = tmpDR
     return dR
 
-def genMatchingFound(dR1_tau, dR2_tau, dR1_b, dR2_b, option):
-   if option == '2genTaus':
-        if dR1_tau<0.5 and dR2_tau<0.5 and dR1_b>0.5 and dR2_b>0.5:
+def genMatchingFound(dR1_tau, dR2_tau, dR1_b, dR2_b, dR1_ele, dR2_ele, dR1_mu, dR2_mu, option):
+    if option == 'all':
+        return True
+    elif option == '2genTau0genB':
+        if dR1_tau<dR_tauEleMu_max and dR2_tau<dR_tauEleMu_max and dR1_b>dR_b_max and dR2_b>dR_b_max:
             return True
         else:
             return False
-   if option == '1genTau1genB':
-        if dR1_tau<0.5 and dR2_tau>0.5 and dR1_b>0.5 and dR2_b<0.5:
+    elif option == '1genTau1genB':
+        if dR1_tau<dR_tauEleMu_max and dR2_tau>dR_tauEleMu_max and dR1_b>dR_b_max and dR2_b<dR_b_max:
             return True
-        elif dR1_tau>0.5 and dR2_tau<0.5 and dR1_b<0.5 and dR2_b>0.5:
-            return True
-        else:
-            return False
-   if option == '1genTau0genB':
-        if dR1_tau<0.5 and dR2_tau>0.5 and dR1_b>0.5 and dR2_b>0.5:
-            return True
-        elif dR1_tau>0.5 and dR2_tau<0.5 and dR1_b>0.5 and dR2_b>0.5:
+        elif dR1_tau>dR_tauEleMu_max and dR2_tau<dR_tauEleMu_max and dR1_b<dR_b_max and dR2_b>dR_b_max:
             return True
         else:
             return False
-   if option == '0genTau1genB':
-        if dR1_tau>0.5 and dR2_tau>0.5 and dR1_b<0.5 and dR2_b>0.5:
+    elif option == '1genTau0genB':
+        if dR1_tau<dR_tauEleMu_max and dR2_tau>dR_tauEleMu_max and dR1_b>dR_b_max and dR2_b>dR_b_max:
             return True
-        elif dR1_tau>0.5 and dR2_tau>0.5 and dR1_b>0.5 and dR2_b<0.5:
-            return True
-        else:
-            return False
-   if option == '2genBs':
-        if dR1_tau>0.5 and dR2_tau>0.5 and dR1_b<0.5 and dR2_b<0.5:
+        elif dR1_tau>dR_tauEleMu_max and dR2_tau<dR_tauEleMu_max and dR1_b>dR_b_max and dR2_b>dR_b_max:
             return True
         else:
             return False
-   if option == '0genMatch':
-        if dR1_tau>0.5 and dR2_tau>0.5 and dR1_b>0.5 and dR2_b>0.5:
+    elif option == '1genTau0genB1genEle0genMu':
+        if dR1_tau<dR_tauEleMu_max and dR2_tau>dR_tauEleMu_max and dR1_b>dR_b_max and dR2_b>dR_b_max and dR2_ele<dR_tauEleMu_max and dR2_mu>dR_tauEleMu_max:
+            return True
+        elif  dR1_tau>dR_tauEleMu_max and dR2_tau<dR_tauEleMu_max and dR1_b>dR_b_max and dR2_b>dR_b_max and dR1_ele<dR_tauEleMu_max and dR1_mu>dR_tauEleMu_max:
             return True
         else:
             return False
-   if option == 'bothGenBTauMatch':
-        if (dR1_tau<0.5 and dR1_b<0.5) or (dR2_b<0.5 and dR2_tau<0.5):
+    elif option == '1genTau0genB0genEle1genMu':
+        if dR1_tau<dR_tauEleMu_max and dR2_tau>dR_tauEleMu_max and dR1_b>dR_b_max and dR2_b>dR_b_max and dR2_ele>dR_tauEleMu_max and dR2_mu<dR_tauEleMu_max:
+            return True
+        elif dR1_tau>dR_tauEleMu_max and dR2_tau<dR_tauEleMu_max and dR1_b>dR_b_max and dR2_b>dR_b_max and dR1_ele>dR_tauEleMu_max and dR1_mu<dR_tauEleMu_max:
             return True
         else:
             return False
+    elif option == '1genTau0genB1genEleMu':
+        if dR1_tau<dR_tauEleMu_max and dR2_tau>dR_tauEleMu_max and dR1_b>dR_b_max and dR2_b>dR_b_max and dR2_ele<dR_tauEleMu_max and dR2_mu<dR_tauEleMu_max:
+            return True
+        elif dR1_tau>dR_tauEleMu_max and dR2_tau<dR_tauEleMu_max and dR1_b>dR_b_max and dR2_b>dR_b_max and dR1_ele<dR_tauEleMu_max and dR1_mu<dR_tauEleMu_max:
+            return True
+        else:
+            return False
+    elif option == '1genTau0genB0genEle0genMu':
+        if dR1_tau<dR_tauEleMu_max and dR2_tau>dR_tauEleMu_max and dR1_b>dR_b_max and dR2_b>dR_b_max and dR2_ele>dR_tauEleMu_max and dR2_mu>dR_tauEleMu_max:
+            return True
+        elif dR1_tau>dR_tauEleMu_max and dR2_tau<dR_tauEleMu_max and dR1_b>dR_b_max and dR2_b>dR_b_max and dR1_ele>dR_tauEleMu_max and dR1_mu>dR_tauEleMu_max:
+            return True
+        else:
+            return False
+    elif option == '0genTau1genB':
+        if dR1_tau>dR_tauEleMu_max and dR2_tau>dR_tauEleMu_max and dR1_b<dR_b_max and dR2_b>dR_b_max:
+            return True
+        elif dR1_tau>dR_tauEleMu_max and dR2_tau>dR_tauEleMu_max and dR1_b>dR_b_max and dR2_b<dR_b_max:
+            return True
+        else:
+            return False
+    elif option == '0genTau1genB1genEle0genMu':
+        if dR1_tau>dR_tauEleMu_max and dR2_tau>dR_tauEleMu_max and dR1_b<dR_b_max and dR2_b>dR_b_max and dR2_ele<dR_tauEleMu_max and dR2_mu>dR_tauEleMu_max:
+            return True
+        elif dR1_tau>dR_tauEleMu_max and dR2_tau>dR_tauEleMu_max and dR1_b>dR_b_max and dR2_b<dR_b_max and dR1_ele<dR_tauEleMu_max and dR1_mu>dR_tauEleMu_max:
+            return True
+        else:
+            return False
+    elif option == '0genTau1genB0genEle1genMu':
+        if dR1_tau>dR_tauEleMu_max and dR2_tau>dR_tauEleMu_max and dR1_b<dR_b_max and dR2_b>dR_b_max and dR2_ele>dR_tauEleMu_max and dR2_mu<dR_tauEleMu_max:
+            return True
+        elif dR1_tau>dR_tauEleMu_max and dR2_tau>dR_tauEleMu_max and dR1_b>dR_b_max and dR2_b<dR_b_max and dR1_ele>dR_tauEleMu_max and dR1_mu<dR_tauEleMu_max:
+            return True
+        else:
+            return False
+    elif option == '0genTau1genB1genEleMu':
+        if dR1_tau>dR_tauEleMu_max and dR2_tau>dR_tauEleMu_max and dR1_b<dR_b_max and dR2_b>dR_b_max and dR2_ele<dR_tauEleMu_max and dR2_mu<dR_tauEleMu_max:
+            return True
+        elif dR1_tau>dR_tauEleMu_max and dR2_tau>dR_tauEleMu_max and dR1_b>dR_b_max and dR2_b<dR_b_max and dR1_ele<dR_tauEleMu_max and dR1_mu<dR_tauEleMu_max:
+            return True
+        else:
+            return False
+    elif option == '0genTau1genB0genEle0genMu':
+        if dR1_tau>dR_tauEleMu_max and dR2_tau>dR_tauEleMu_max and dR1_b<dR_b_max and dR2_b>dR_b_max and dR2_ele>dR_tauEleMu_max and dR2_mu>dR_tauEleMu_max:
+            return True
+        elif dR1_tau>dR_tauEleMu_max and dR2_tau>dR_tauEleMu_max and dR1_b>dR_b_max and dR2_b<dR_b_max and dR1_ele>dR_tauEleMu_max and dR1_mu>dR_tauEleMu_max:
+            return True
+        else:
+            return False
+    elif option == '0genTau2genB':
+        if dR1_tau>dR_tauEleMu_max and dR2_tau>dR_tauEleMu_max and dR1_b<dR_b_max and dR2_b<dR_b_max:
+            return True
+        else:
+            return False
+    elif option == '0genTau0genB':
+        if dR1_tau>dR_tauEleMu_max and dR2_tau>dR_tauEleMu_max and dR1_b>dR_b_max and dR2_b>dR_b_max:
+            return True
+        else:
+            return False
+    elif option == '0genTau0genB1genEle1genMu':
+        if dR1_tau>dR_tauEleMu_max and dR2_tau>dR_tauEleMu_max and dR1_b>dR_b_max and dR2_b>dR_b_max and dR1_ele<dR_tauEleMu_max and dR2_ele>dR_tauEleMu_max and dR1_mu>dR_tauEleMu_max and dR2_mu<dR_tauEleMu_max:
+            return True
+        elif dR1_tau>dR_tauEleMu_max and dR2_tau>dR_tauEleMu_max and dR1_b>dR_b_max and dR2_b>dR_b_max and dR1_ele>dR_tauEleMu_max and dR2_ele<dR_tauEleMu_max and dR1_mu<dR_tauEleMu_max and dR2_mu>dR_tauEleMu_max:
+            return True
+        else:
+            return False
+    elif option == '0genTau0genB2genEle0genMu':
+        if dR1_tau>dR_tauEleMu_max and dR2_tau>dR_tauEleMu_max and dR1_b>dR_b_max and dR2_b>dR_b_max and dR1_ele<dR_tauEleMu_max and dR2_ele<dR_tauEleMu_max and dR1_mu>dR_tauEleMu_max and dR2_mu>dR_tauEleMu_max:
+            return True
+        else:
+            return False
+    elif option == '0genTau0genB0genEle2genMu':
+        if dR1_tau>dR_tauEleMu_max and dR2_tau>dR_tauEleMu_max and dR1_b>dR_b_max and dR2_b>dR_b_max and dR1_ele>dR_tauEleMu_max and dR2_ele>dR_tauEleMu_max and dR1_mu<dR_tauEleMu_max and dR2_mu<dR_tauEleMu_max:
+            return True
+        else:
+            return False
+    elif option == '0genTau0genB1genEle0genMu':
+        if dR1_tau>dR_tauEleMu_max and dR2_tau>dR_tauEleMu_max and dR1_b>dR_b_max and dR2_b>dR_b_max and dR1_ele<dR_tauEleMu_max and dR2_ele>dR_tauEleMu_max and dR1_mu>dR_tauEleMu_max and dR2_mu>dR_tauEleMu_max:
+            return True
+        elif dR1_tau>dR_tauEleMu_max and dR2_tau>dR_tauEleMu_max and dR1_b>dR_b_max and dR2_b>dR_b_max and dR1_ele>dR_tauEleMu_max and dR2_ele<dR_tauEleMu_max and dR1_mu>dR_tauEleMu_max and dR2_mu>dR_tauEleMu_max:
+            return True
+        else:
+            return False
+    elif option == '0genTau0genB0genEle1genMu':
+        if dR1_tau>dR_tauEleMu_max and dR2_tau>dR_tauEleMu_max and dR1_b>dR_b_max and dR2_b>dR_b_max and dR1_ele>dR_tauEleMu_max and dR2_ele>dR_tauEleMu_max and dR1_mu<dR_tauEleMu_max and dR2_mu>dR_tauEleMu_max:
+            return True
+        elif dR1_tau>dR_tauEleMu_max and dR2_tau>dR_tauEleMu_max and dR1_b>dR_b_max and dR2_b>dR_b_max and dR1_ele>dR_tauEleMu_max and dR2_ele>dR_tauEleMu_max and dR1_mu>dR_tauEleMu_max and dR2_mu<dR_tauEleMu_max:
+            return True
+        else:
+            return False
+    elif option == '0genTau0genB1genEleMu':
+        if dR1_tau>dR_tauEleMu_max and dR2_tau>dR_tauEleMu_max and dR1_b>dR_b_max and dR2_b>dR_b_max and dR1_ele<dR_tauEleMu_max and dR1_mu<dR_tauEleMu_max:
+            return True
+        elif dR1_tau>dR_tauEleMu_max and dR2_tau>dR_tauEleMu_max and dR1_b>dR_b_max and dR2_b>dR_b_max and dR2_ele<dR_tauEleMu_max and dR2_mu<dR_tauEleMu_max:
+            return True
+        else:
+            return False
+    elif option == '0genTau0genB0genEle0genMu':
+        if dR1_tau>dR_tauEleMu_max and dR2_tau>dR_tauEleMu_max and dR1_b>dR_b_max and dR2_b>dR_b_max and dR1_ele>dR_tauEleMu_max and dR2_ele>dR_tauEleMu_max and dR1_mu>dR_tauEleMu_max and dR2_mu>dR_tauEleMu_max:
+            return True
+        else:
+            return False
+    elif option == 'bothGenBTauMatch':
+        if (dR1_tau<dR_tauEleMu_max and dR1_b<dR_b_max) or (dR2_b<dR_b_max and dR2_tau<dR_tauEleMu_max):
+            return True
+        else:
+            return False
+    elif option == '1genTauB1genTau0genB':
+        if dR1_tau<dR_tauEleMu_max and dR1_b<dR_b_max and dR2_tau<dR_tauEleMu_max and dR2_b>dR_b_max:
+            return True
+        elif dR2_tau<dR_tauEleMu_max and dR2_b<dR_b_max and dR1_tau<dR_tauEleMu_max and dR1_b>dR_b_max:
+            return True
+        else:
+            return False
+    elif option == '1genTauB0genTau1genB':
+        if dR1_tau<dR_tauEleMu_max and dR1_b<dR_b_max and dR2_tau>dR_tauEleMu_max and dR2_b<dR_b_max:
+            return True
+        elif dR2_tau<dR_tauEleMu_max and dR2_b<dR_b_max and dR1_tau>dR_tauEleMu_max and dR1_b<dR_b_max:
+            return True
+        else:
+            return False
+    elif option == '2genTauB':
+        if dR1_tau<dR_tauEleMu_max and dR1_b<dR_b_max and dR2_tau<dR_tauEleMu_max and dR2_b<dR_b_max:
+            return True
+        else:
+            return False
+    elif option == '1genTauB0genTau0genB1genEle0genMu':
+        if dR1_tau<dR_tauEleMu_max and dR1_b<dR_b_max and dR2_tau>dR_tauEleMu_max and dR2_b>dR_b_max and dR2_ele<dR_tauEleMu_max and dR2_mu>dR_tauEleMu_max:
+            return True
+        elif dR2_tau<dR_tauEleMu_max and dR2_b<dR_b_max and dR1_tau>dR_tauEleMu_max and dR1_b>dR_b_max and dR1_ele<dR_tauEleMu_max and dR1_mu>dR_tauEleMu_max:
+            return True
+        else:
+            return False
+    elif option == '1genTauB0genTau0genB0genEle1genMu':
+        if dR1_tau<dR_tauEleMu_max and dR1_b<dR_b_max and dR2_tau>dR_tauEleMu_max and dR2_b>dR_b_max and dR2_ele>dR_tauEleMu_max and dR2_mu<dR_tauEleMu_max:
+            return True
+        elif dR2_tau<dR_tauEleMu_max and dR2_b<dR_b_max and dR1_tau>dR_tauEleMu_max and dR1_b>dR_b_max and dR1_ele>dR_tauEleMu_max and dR1_mu<dR_tauEleMu_max:
+            return True
+        else:
+            return False
+    elif option == '1genTauB0genTau0genB1genEleMu':
+        if dR1_tau<dR_tauEleMu_max and dR1_b<dR_b_max and dR2_tau>dR_tauEleMu_max and dR2_b>dR_b_max and dR2_ele<dR_tauEleMu_max and dR2_mu<dR_tauEleMu_max:
+            return True
+        elif dR2_tau<dR_tauEleMu_max and dR2_b<dR_b_max and dR1_tau>dR_tauEleMu_max and dR1_b>dR_b_max and dR1_ele<dR_tauEleMu_max and dR1_mu<dR_tauEleMu_max:
+            return True
+        else:
+            return False
+    elif option == '1genTauB0genTau0genB0genEle0genMu':
+        if dR1_tau<dR_tauEleMu_max and dR1_b<dR_b_max and dR2_tau>dR_tauEleMu_max and dR2_b>dR_b_max and dR2_ele>dR_tauEleMu_max and dR2_mu>dR_tauEleMu_max:
+            return True
+        elif dR2_tau<dR_tauEleMu_max and dR2_b<dR_b_max and dR1_tau>dR_tauEleMu_max and dR1_b>dR_b_max and dR1_ele>dR_tauEleMu_max and dR1_mu>dR_tauEleMu_max:
+            return True
+        else:
+            return False
+
 
 options = opts()
 
@@ -97,8 +249,8 @@ tmpHist_total2 = r.TH1F('total2', '', histRange2[0], histRange2[1], histRange2[2
 title = options.title
 
 psfile = 'chargeSignVS'
-genPar = 'BTau'
-postfix = 'bothGenBTauMatch'
+genPar = 'mu'
+postfix = options.option
 max1 = 1.
 max2 = 1.
 
@@ -124,14 +276,20 @@ for i in range(0, total):
         genTuple = [iTree.genBPt, iTree.genBEta, iTree.genBPhi]
     elif genPar == 'Tau':
         genTuple = [iTree.genTauPt, iTree.genTauEta, iTree.genTauPhi]
+    elif genPar == 'e':
+        genTuple = [iTree.genElePt, iTree.genEleEta, iTree.genElePhi]
+    elif genPar == 'mu':
+        genTuple = [iTree.genMuPt, iTree.genMuEta, iTree.genMuPhi]
     elif genPar == 'BTau':
-        genTupleTau = [iTree.genTauPt, iTree.genTauEta, iTree.genTauPhi]
-        genTupleB = [iTree.genBPt, iTree.genBEta, iTree.genBPhi]
-        dR1_tau = findDR(genTupleTau[0],genTupleTau[1],genTupleTau[2],matchTuple1[0],matchTuple1[1],matchTuple1[2])
-        dR2_tau = findDR(genTupleTau[0],genTupleTau[1],genTupleTau[2],matchTuple2[0],matchTuple2[1],matchTuple2[2])
-        dR1_b = findDR(genTupleB[0],genTupleB[1],genTupleB[2],matchTuple1[0],matchTuple1[1],matchTuple1[2])
-        dR2_b = findDR(genTupleB[0],genTupleB[1],genTupleB[2],matchTuple2[0],matchTuple2[1],matchTuple2[2])
-        if not genMatchingFound(dR1_tau, dR2_tau, dR1_b, dR2_b, postfix):
+        dR1_tau = findDR(iTree.genTauPt,iTree.genTauEta,iTree.genTauPhi,matchTuple1[0],matchTuple1[1],matchTuple1[2])
+        dR2_tau = findDR(iTree.genTauPt,iTree.genTauEta,iTree.genTauPhi,matchTuple2[0],matchTuple2[1],matchTuple2[2])
+        dR1_b = findDR(iTree.genBPt,iTree.genBEta,iTree.genBPhi,matchTuple1[0],matchTuple1[1],matchTuple1[2])
+        dR2_b = findDR(iTree.genBPt,iTree.genBEta,iTree.genBPhi,matchTuple2[0],matchTuple2[1],matchTuple2[2])
+        dR1_ele = findDR(iTree.genElePt,iTree.genEleEta,iTree.genElePhi,matchTuple1[0],matchTuple1[1],matchTuple1[2])
+        dR2_ele = findDR(iTree.genElePt,iTree.genEleEta,iTree.genElePhi,matchTuple2[0],matchTuple2[1],matchTuple2[2])
+        dR1_mu = findDR(iTree.genMuPt,iTree.genMuEta,iTree.genMuPhi,matchTuple1[0],matchTuple1[1],matchTuple1[2])
+        dR2_mu = findDR(iTree.genMuPt,iTree.genMuEta,iTree.genMuPhi,matchTuple2[0],matchTuple2[1],matchTuple2[2])
+        if not genMatchingFound(dR1_tau, dR2_tau, dR1_b, dR2_b, dR1_ele, dR2_ele, dR1_mu, dR2_mu, postfix):
             continue
         genTuple = [iTree.genTauPt, iTree.genTauEta, iTree.genTauPhi]
 
@@ -176,7 +334,7 @@ print "saving file at: %sGen%sdR_%s_%s.pdf" %(psfile, genPar, title, postfix)
 c.Divide(2,2)
 c.cd(1)
 r.gPad.SetLogy()
-tmpHist3.SetTitle('%s tau1 dR from closest genTau (%s); dR; events' %(title, postfix))
+tmpHist3.SetTitle('%s tau1 dR from closest gen %s (%s); dR; events' %(title, genPar, postfix))
 tmpHist3.Draw()
 tmpHist1.SetLineColor(r.kRed)
 tmpHist1.Draw("same")
@@ -185,7 +343,7 @@ l1.Draw("same")
 c.Update()
 c.cd(2)
 r.gPad.SetLogy()
-tmpHist4.SetTitle('%s tau2 dR from closest genTau (%s); dR; events' %(title, postfix))
+tmpHist4.SetTitle('%s tau2 dR from closest gen %s (%s); dR; events' %(title, genPar, postfix))
 tmpHist4.Draw("")
 tmpHist2.SetLineColor(r.kRed)
 tmpHist2.Draw("same")

@@ -332,6 +332,9 @@ def addHistFromFiles(dirName, histName, hist, xAxisLabels = ['']):
         if (not iFile.IsDirectory()) and fName.endswith(".root"):
             tmpHist = r.TH1F()
             ifile = r.TFile(fName)
+            if ifile.IsZombie():
+                print 'skipping file: %s' %(fName)
+                continue
             tmpHist = ifile.Get(histName)
             for i in range(len(xAxisLabels)):
                 hist.Fill(xAxisLabels[i],tmpHist.GetBinContent(i+1))
