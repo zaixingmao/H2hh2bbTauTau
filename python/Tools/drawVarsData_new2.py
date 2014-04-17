@@ -20,6 +20,7 @@ def opts():
     parser.add_option("--setRangeMin", dest="rangeMin", default = 0, help="")
     parser.add_option("--setRangeMax", dest="rangeMax", default = 100, help="")
     parser.add_option("--location", dest="location", default = '.', help="")
+    parser.add_option("--bTag", dest="bTag", default = 'True', help="")
 
     options, args = parser.parse_args()
     return options
@@ -34,8 +35,18 @@ def conditions(selection):
     elif selection == 4:
         return 'SS', 'relaxed'
 
-def passCut(tree):
-    if tree.CSVJ1 > 0.679 and tree.CSVJ2 > 0.244 and abs(tree.eta1.at(0))<2.1 and abs(tree.eta2.at(0))<2.1:
+def bTagSelection(tree, bTag):
+    passCut = 0
+    if bTag == 'True' and tree.CSVJ1 > 0.679 and tree.CSVJ2 > 0.244:
+        passCut = 1
+    if bTag == 'False':
+        passCut = 1
+    if bTag == 'Revert' and (tree.CSVJ1 < 0.679 and tree.CSVJ2 < 0.244):
+        passCut = 1
+    return passCut
+
+def passCut(tree, bTag):
+    if bTagSelection(tree, bTag) and abs(tree.eta1.at(0))<2.1 and abs(tree.eta2.at(0))<2.1:
         iso_count = 0
         sign_count = 0
         if tree.iso2.at(0) > 1.5:
@@ -46,7 +57,7 @@ def passCut(tree):
     else:
         return 0
 
-def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, rangeMin, rangeMax, location):
+def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, rangeMin, rangeMax, location, bTag):
     r.gStyle.SetOptStat(0)
     fileList = [('ZZ', 'ZZ_eff_all.root', 2500, 5),
                 ('tt_full_lep','tt_eff_all.root', 26197.5, r.kRed-7),
@@ -54,6 +65,7 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
                 ('DYJetsToLL', 'DYJetsToLL_eff_all.root', 3504000, r.kGreen-7),
                 ('W2JetsToLNu', 'W2JetsToLNu_eff_all.root', 1750000, r.kMagenta-9)]
     histList = []
+    QCDHistList = []
     varRange = [nbins, rangeMin, rangeMax]
     Lumi = 18.0
     initNEventsList = []
@@ -65,13 +77,13 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
     var_data = []
 
     for i in range(3):
-        var_data.append(r.TH1F('%s_%i' %(fileList[i][0],i),"", varRange[0], varRange[1], varRange[2]))
+        var_data.append(r.TH1F('data_%i' %(i),"", varRange[0], varRange[1], varRange[2]))
     fData = r.TFile('dataTotal_all.root')
     treeData = fData.Get('eventTree')
     print 'Adding events from: dataTotal_all.root ...'
     for iEntry in range(treeData.GetEntries()):
         treeData.GetEntry(iEntry)
-        select = passCut(treeData)
+        select = passCut(treeData, bTag)
         if (select == 0) or (select == 1):
             continue
         var_data[select-2].Fill(varsList.findVar(treeData, varName))
@@ -88,7 +100,7 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
         tmpTree.append(tmpFile[i].Get('eventTree'))
         for iEntry in range(tmpTree[i].GetEntries()):
             tmpTree[i].GetEntry(iEntry)
-            select = passCut(tmpTree[i])
+            select = passCut(tmpTree[i], bTag)
             if not select:
                 continue
             histList[4*i+select-1].Fill(varsList.findVar(tmpTree[i], varName), tmpTree[i].triggerEff)
@@ -101,11 +113,23 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
             var_background[j].Add(histList[4*i+j])
             legendHistos.append((histList[4*i+j], '%s (%.2f)' %(fileList[i][0], histList[4*i+j].Integral())))
 
+    for i in range(3):
+        QCDHistList.append(r.TH1F('QCD_%i' %(i),"", varRange[0], varRange[1], varRange[2]))
+        for j in range(varRange[0]):
+            dataValue = var_data[i].GetBinContent(j+1)
+            dataError = var_data[i].GetBinError(j+1)
+            MCValue = 0
+            for k in range(len(fileList)):
+                MCValue +=  histList[4*k+1+i].GetBinContent(j+1)
+            if dataValue - MCValue > 0:
+                QCDHistList[i].SetBinContent(j+1, dataValue - MCValue)
+                QCDHistList[i].SetBinError(j+1, dataError)
+
     DrawSignal = False
     if signalSelection != '':
         var_signal = []
         for i in range(4):
-            var_signal.append(r.TH1F('%s_%i' %(fileList[i][0],i),"", varRange[0], varRange[1], varRange[2]))
+            var_signal.append(r.TH1F('%s_%i' %(signalSelection,i),"", varRange[0], varRange[1], varRange[2]))
         signalDict = {'H260': ('H2hh260_all.root', 14.76),
                       'H300': ('H2hh300_all.root', 15.9),
                       'H350': ('H2hh350_all.root', 8.57)}
@@ -115,7 +139,7 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
             print 'Adding events from: %s ...' %(signalDict[signalSelection][0])
             for iEntry in range(treeSignal.GetEntries()):
                 treeSignal.GetEntry(iEntry)
-                select = passCut(treeSignal)
+                select = passCut(treeSignal, bTag)
                 if not select:
                     continue
                 var_signal[select-1].Fill(varsList.findVar(treeSignal, varName), treeSignal.triggerEff)
@@ -134,10 +158,20 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
 
     legendPosition = (0.6, 0.7, 0.90, 0.88)
     l = []
+    r.gROOT.SetBatch(True)  # to suppress canvas pop-outs
+    if bTag == 'True':
+        titleName = '1 Medium 1 Loose b-tag'
+        fileName = 'bTag'
+    elif bTag == 'False':
+        titleName = ''
+        fileName = 'all'
+    elif bTag == 'Revert':
+        titleName = 'Revert b-tag'
+        fileName = 'revert_bTag'
 
-    psfile = '%s/%s_combined.pdf' %(location, varName)
+    psfile = '%s/%s_%s.pdf' %(location, varName, fileName)
     c = r.TCanvas("c","Test", 800, 600)
-    ps = r.TPDF(psfile,112)
+    #ps = r.TPDF(psfile,112)
     c.Divide(2,2)
     drawOpt = ''
     for k in range(4):
@@ -145,25 +179,34 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
         if logY == 'True':
             r.gPad.SetLogy()
         signSelection, iso = conditions(k+1)
-        var_background[k].SetTitle('%s %s Events 1 Medium 1 Loose b-tag (%.1f fb^{-1}); %s; events / bin' %(signSelection, iso, Lumi,varName))
+        var_background[k].SetTitle('%s %s Events %s (%.1f fb^{-1}); %s; events / bin' %(signSelection, iso, titleName, Lumi,varName))
         var_background[k].SetMaximum(max)
         var_background[k].SetMinimum(0.01)
         var_background[k].Draw()
         if k != 0:
             var_data[k-1].Draw('PE same')
-            l.append(tool.setMyLegend(lPosition=legendPosition, lHistList=[legendHistos[k-1],legendHistos[3+k], legendHistos[7+k], legendHistos[11+k], legendHistos[15+k], legendHistos[16+k], legendHistos[23+k]]))
+            l.append(tool.setMyLegend(lPosition=legendPosition, lHistList=[legendHistos[k-1],legendHistos[3+k], legendHistos[7+k], legendHistos[11+k], legendHistos[15+k], legendHistos[19+k], legendHistos[23+k]]))
         else:
-            l.append(tool.setMyLegend(lPosition=legendPosition, lHistList=[legendHistos[3+k], legendHistos[7+k], legendHistos[11+k], legendHistos[15+k], legendHistos[16+k], legendHistos[23+k]]))
+            l.append(tool.setMyLegend(lPosition=legendPosition, lHistList=[legendHistos[3+k], legendHistos[7+k], legendHistos[11+k], legendHistos[15+k], legendHistos[19+k], legendHistos[23+k]]))
         l[k].Draw('same')
         var_signal[k].Draw('same')
-        c.Update()
-
-    ps.Close()
+    c.Update()
+    c.Print('%s(' %psfile) 
+    for k in range(3):
+        c.cd(k+2)
+        QCDHistList[k].SetTitle('%s %s Data - MC Events %s (%.1f fb^{-1}); %s; events / bin' %(signSelection, iso, titleName, Lumi,varName))
+        QCDHistList[k].SetMarkerStyle(8)
+        QCDHistList[k].SetMarkerSize(0.9)
+        QCDHistList[k].SetMaximum(max)
+        QCDHistList[k].SetMinimum(1)
+        QCDHistList[k].Draw('PE')
+    c.Update()
+    c.Print('%s)' %psfile)
+    #ps.Close()
     print "Plot saved at %s" %(psfile)
-    histList = []
 
 op = opts()
 if op.varName != 'test':
     getHistos(op.varName, op.signal, op.logy, float(op.sigBoost), int(op.nbins),
-           op.useData, float(op.max), float(op.rangeMin), float(op.rangeMax), op.location)
+           op.useData, float(op.max), float(op.rangeMin), float(op.rangeMax), op.location, op.bTag)
 
