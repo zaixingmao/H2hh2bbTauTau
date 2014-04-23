@@ -49,7 +49,7 @@ def passCut(tree, bTag):
     if bTagSelection(tree, bTag) and abs(tree.eta1.at(0))<2.1 and abs(tree.eta2.at(0))<2.1:
         iso_count = 0
         sign_count = 0
-        if tree.iso2.at(0) > 1.5:
+        if tree.iso1.at(0) > 1.5 or tree.iso2.at(0) > 1.5:
             iso_count = 1
         if tree.charge1.at(0) -  tree.charge2.at(0) == 0:
             sign_count = 1
@@ -125,6 +125,13 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
                 QCDHistList[i].SetBinContent(j+1, dataValue - MCValue)
                 QCDHistList[i].SetBinError(j+1, dataError)
 
+    QCDDiff = r.TH1F('QCD_diff',"", varRange[0], varRange[1], varRange[2])
+    for j in range(varRange[0]):
+        OS_Events = QCDHistList[1].GetBinContent(j+1)
+        if OS_Events != 0:
+            QCDDiff.SetBinContent(j+1, QCDHistList[2].GetBinContent(j+1)/OS_Events)
+            QCDDiff.SetBinError(j+1, QCDHistList[2].GetBinError(j+1)/OS_Events)
+
     DrawSignal = False
     if signalSelection != '':
         var_signal = []
@@ -191,9 +198,24 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
         l[k].Draw('same')
         var_signal[k].Draw('same')
     c.Update()
-    c.Print('%s(' %psfile) 
+    c.Print('%s(' %psfile)
+    c.cd(1)
+    r.gPad.SetLogy(0)
+    QCDDiff.SetTitle('SS/OS MultiJet Events %s (%.1f fb^{-1}); %s; SS/OS / bin' %(titleName, Lumi,varName))
+    QCDDiff.SetMarkerStyle(8)
+    QCDDiff.SetMarkerSize(0.9)
+    QCDDiff.SetMaximum(2)
+    QCDDiff.SetMinimum(0)
+    QCDDiff.Draw('PE')
+    line = r.TLine(varRange[1], 1,varRange[2],1)
+    line.SetLineStyle(2)
+    line.SetLineColor(r.kRed)
+    line.Draw('same')
     for k in range(3):
         c.cd(k+2)
+        if logY == 'True':
+            r.gPad.SetLogy()
+        signSelection, iso = conditions(k+2)
         QCDHistList[k].SetTitle('%s %s Data - MC Events %s (%.1f fb^{-1}); %s; events / bin' %(signSelection, iso, titleName, Lumi,varName))
         QCDHistList[k].SetMarkerStyle(8)
         QCDHistList[k].SetMarkerSize(0.9)
