@@ -29,10 +29,10 @@ def passCut(iTree, cut):
         if iTree.iso1.at(0) > 1.5 or iTree.iso2.at(0) > 1.5:
             return False
     if 'softLept0' in cut:
-        if not (iTree.CSVJ1SoftLeptPt<0 and iTree.CSVJ2SoftLeptPt<0):
+        if not (iTree.CSVJ1SoftLeptPt + iTree.CSVJ2SoftLeptPt == 0):
             return False
     if 'softLept1' in cut:
-        if not (iTree.CSVJ1SoftLeptPt*iTree.CSVJ2SoftLeptPt < 0):
+        if not (iTree.CSVJ1SoftLeptPt*iTree.CSVJ2SoftLeptPt == 0 and iTree.CSVJ1SoftLeptPt + iTree.CSVJ2SoftLeptPt != 0):
             return False
     if 'softLept2' in cut:
         if not (iTree.CSVJ1SoftLeptPt>0 and iTree.CSVJ2SoftLeptPt>0):

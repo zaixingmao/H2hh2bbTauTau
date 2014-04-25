@@ -15,5 +15,6 @@ for varName, varConfig in varsList.varsRange.items():
     output += ' --sigBoost %i' %varConfig[4]
     output += ' --logY %s' %varConfig[5]
     output += ' --bTag True'
+    output += ' --predict True'
     os.system(output)
 #drawVarsData_new2.getHistos('dPhiMetTauPair', 'H300', True, 20, 11, 'True', 100, 0, 3.3, '/scratch/zmao/relaxed/plots')

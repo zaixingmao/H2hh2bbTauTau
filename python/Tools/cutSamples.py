@@ -65,6 +65,9 @@ def opts():
     parser = optparse.OptionParser()
     parser.add_option("-l", dest="location", default="/scratch/zmao", help="location to be saved")
     parser.add_option("-n", dest="nevents", default="-1", help="amount of events to be saved")
+    parser.add_option("-g", dest="genMatch", default="jet", help="gen particle for the reco-jet to match to")
+    parser.add_option("-a", dest="addFiles", default="False", help="")
+
     options, args = parser.parse_args()
 
     return options
@@ -82,22 +85,54 @@ def findFullMass(jetsList = [], sv4Vec = ''):
 def findGenJet(j1Name, jet1, j2Name, jet2, tChain):
     genJet1 = lvClass()
     genJet2 = lvClass()
-    genJet1.SetCoordinates(varsList.findVarInChain(tChain, '%sGenPt' %j1Name),
-                          varsList.findVarInChain(tChain, '%sGenEta' %j1Name),
-                          varsList.findVarInChain(tChain, '%sGenPhi' %j1Name),
-                          varsList.findVarInChain(tChain, '%sGenMass' %j2Name))
-    genJet2.SetCoordinates(varsList.findVarInChain(tChain, '%sGenPt' %j2Name),
-                          varsList.findVarInChain(tChain, '%sGenEta' %j2Name),
-                          varsList.findVarInChain(tChain, '%sGenPhi' %j2Name),
-                          varsList.findVarInChain(tChain, '%sGenMass' %j2Name))
+    genJet1.SetCoordinates(0,0,0,0)
+    genJet2.SetCoordinates(0,0,0,0)
+    if varsList.findVarInChain(tChain, '%sGenPt' %j1Name) > 0 and varsList.findVarInChain(tChain, '%sGenMass' %j1Name) > 0:
+        genJet1.SetCoordinates(varsList.findVarInChain(tChain, '%sGenPt' %j1Name),
+                                varsList.findVarInChain(tChain, '%sGenEta' %j1Name),
+                                varsList.findVarInChain(tChain, '%sGenPhi' %j1Name),
+                                varsList.findVarInChain(tChain, '%sGenMass' %j2Name))
+    if varsList.findVarInChain(tChain, '%sGenPt' %j1Name) > 0 and varsList.findVarInChain(tChain, '%sGenMass' %j1Name) > 0:
+        genJet2.SetCoordinates(varsList.findVarInChain(tChain, '%sGenPt' %j2Name),
+                                varsList.findVarInChain(tChain, '%sGenEta' %j2Name),
+                                varsList.findVarInChain(tChain, '%sGenPhi' %j2Name),
+                                varsList.findVarInChain(tChain, '%sGenMass' %j2Name))
 
     dR1 = r.Math.VectorUtil.DeltaR(genJet1, jet1)
     dR2 = r.Math.VectorUtil.DeltaR(genJet2, jet2)
     return dR1, genJet1, dR2, genJet2
 
+def findGenBJet(jet1, jet2, tChain):
+    genJet1 = lvClass()
+    genJet2 = lvClass()
+    genJet1.SetCoordinates(0,0,0,0)
+    genJet2.SetCoordinates(0,0,0,0)
+    tmpJet = lvClass()
+    tmpJet.SetCoordinates(0,0,0,0)
+    dR1 = 0.5
+    dR2 = 0.5
+    for i in range(tChain.genBPt.size()):
+        tmpJet.SetCoordinates(tChain.genBPt.at(i), tChain.genBEta.at(i), tChain.genBPhi.at(i), tChain.genBMass.at(i))
+        tmpDR1 = r.Math.VectorUtil.DeltaR(tmpJet, jet1)
+        if dR1 > tmpDR1:
+            dR1 = tmpDR1
+            genJet1 = tmpJet
+
+    for i in range(tChain.genBPt.size()):
+        tmpJet.SetCoordinates(tChain.genBPt.at(i), tChain.genBEta.at(i), tChain.genBPhi.at(i), tChain.genBMass.at(i))
+        tmpDR2 = r.Math.VectorUtil.DeltaR(tmpJet, jet2)
+        if dR2 > tmpDR2:
+            dR2 = tmpDR2
+            genJet2 = tmpJet
+
+    if genJet1 == genJet2:
+        print 'matched to the same b quark'
+    return dR1, genJet1, dR2, genJet2
+
 def getRegVars(jName, tChain):
     
     jet = lvClass()
+    SoftLeptPt = 0
     jet.SetCoordinates(varsList.findVarInChain(tChain, '%sPt' %jName), varsList.findVarInChain(tChain,'%sEta' %jName),
                        varsList.findVarInChain(tChain, '%sPhi' %jName), 0)
     if varsList.findVarInChain(tChain,'%sSoftLeptPID' %jName) == 0:
@@ -109,9 +144,12 @@ def getRegVars(jName, tChain):
         softLept.SetCoordinates(varsList.findVarInChain(tChain, '%sSoftLeptPt' %jName), varsList.findVarInChain(tChain,'%sSoftLeptEta' %jName),
                                 varsList.findVarInChain(tChain, '%sSoftLeptPhi' %jName), 0)
         SoftLeptdR = r.Math.VectorUtil.DeltaR(softLept, jet)
+        SoftLeptPt = varsList.findVarInChain(tChain, '%sSoftLeptPt' %jName)
 
+    if SoftLeptPt < 0:
+        SoftLeptPt = 0
 
-    return varsList.findVarInChain(tChain, '%sPtUncorr' %jName), varsList.findVarInChain(tChain, '%sEt' %jName), varsList.findVarInChain(tChain, '%sMt' %jName), varsList.findVarInChain(tChain, '%sptLeadTrk' %jName), varsList.findVarInChain(tChain, '%sVtx3dL' %jName),varsList.findVarInChain(tChain, '%sVtx3deL' %jName), varsList.findVarInChain(tChain, '%svtxMass' %jName), varsList.findVarInChain(tChain, '%sVtxPt' %jName), varsList.findVarInChain(tChain, '%sJECUnc' %jName), float(varsList.findVarInChain(tChain, '%sNtot' %jName)), SoftLeptPtRel, varsList.findVarInChain(tChain, '%sSoftLeptPt' %jName), SoftLeptdR
+    return varsList.findVarInChain(tChain, '%sPtUncorr' %jName), varsList.findVarInChain(tChain, '%sEt' %jName), varsList.findVarInChain(tChain, '%sMt' %jName), varsList.findVarInChain(tChain, '%sptLeadTrk' %jName), varsList.findVarInChain(tChain, '%sVtx3dL' %jName),varsList.findVarInChain(tChain, '%sVtx3deL' %jName), varsList.findVarInChain(tChain, '%svtxMass' %jName), varsList.findVarInChain(tChain, '%sVtxPt' %jName), varsList.findVarInChain(tChain, '%sJECUnc' %jName), float(varsList.findVarInChain(tChain, '%sNtot' %jName)), SoftLeptPtRel, SoftLeptPt, SoftLeptdR
 
 
 def setDPhiInRange(dPhi):
@@ -144,7 +182,7 @@ preVarList = ['EVENT', 'HMass', 'svMass', 'svPt', 'svEta', 'svPhi', 'J1Pt', 'J1E
            'J4PtUncorr', 'J4VtxPt', 'J4Vtx3dL', 'J4Vtx3deL', 'J4ptLeadTrk', 'J4vtxMass', 'J4vtxPt', 'J4Ntot', 
            'J4SoftLepPt', 'J4SoftLepEta', 'J4SoftLepPhi', 'J4SoftLepPID', 'J4JECUnc', 'J4Et', 'J4Mt',
           ]
-genVarList = ['genBPt', 'genBEta', 'genBPhi', 'genTauPt', 'genTauEta', 'genTauPhi', 'genElePt', 'genEleEta', 
+genVarList = ['genBPt', 'genBEta', 'genBPhi','genBMass', 'genTauPt', 'genTauEta', 'genTauPhi', 'genElePt', 'genEleEta', 
               'genElePhi', 'genMuPt', 'genMuEta', 'genMuPhi','J1GenPt', 'J1GenEta', 'J1GenPhi', 'J1GenMass',
               'J2GenPt', 'J2GenEta', 'J2GenPhi', 'J2GenMass', 'J3GenPt', 'J3GenEta', 'J3GenPhi', 'J3GenMass',
               'J4GenPt', 'J4GenEta', 'J4GenPhi', 'J4GenMass']
@@ -166,12 +204,16 @@ for iSample, iLocation in sampleLocations:
         varList = fullVarList
 
     cutFlow = r.TH1F()
-    tool.addHistFromFiles(dirName=iLocation, histName = "TT/results", hist = cutFlow, xAxisLabels=xLabels)
-    #tool.addHistFromFiles(dirName=iLocation, histName = "preselection", hist = cutFlow, xAxisLabels=xLabels)
+    if options.addFiles == 'True':
+        tool.addHistFromFiles(dirName=iLocation, histName = "preselection", hist = cutFlow, xAxisLabels=xLabels)
+    else:
+        tool.addHistFromFiles(dirName=iLocation, histName = "TT/results", hist = cutFlow, xAxisLabels=xLabels)
     cutFlow.SetName('preselection')
 
-    iChain = r.TChain("ttTreeBeforeChargeCut/eventTree")
-    #iChain = r.TChain("eventTree")
+    if options.addFiles == 'True':
+        iChain = r.TChain("eventTree")
+    else:
+        iChain = r.TChain("ttTreeBeforeChargeCut/eventTree")
     nEntries = tool.addFiles(ch=iChain, dirName=iLocation, knownEventNumber=signalEntries, printTotalEvents=True, blackList=blackList)
     iChain.SetBranchStatus("*",0)
     for iVar in range(len(varList)):
@@ -359,15 +401,26 @@ for iSample, iLocation in sampleLocations:
         bb, CSVJ1[0], CSVJ2[0], CSVJet1, CSVJet2, fullMass[0], dRJJ[0], j1Name, j2Name = findFullMass(jetsList=jetsList, sv4Vec=sv4Vec) 
         if bb == -1:
             continue
+        matchGenJet1Pt[0] = 0
+        matchGenJet2Pt[0] = 0
 
         if not isData:
-            dRGenJet1Match[0], mGenJet1, dRGenJet2Match[0], mGenJet2 = findGenJet(j1Name, CSVJet1, j2Name, CSVJet2, iChain)
+            if options.genMatch == 'jet':
+                dRGenJet1Match[0], mGenJet1, dRGenJet2Match[0], mGenJet2 = findGenJet(j1Name, CSVJet1, j2Name, CSVJet2, iChain)
+            else:
+                dRGenJet1Match[0], mGenJet1, dRGenJet2Match[0], mGenJet2 = findGenBJet(CSVJet1, CSVJet2, iChain)                
             matchGenJet1Pt[0] = mGenJet1.pt()
+            if matchGenJet1Pt[0] < 0:
+                print 'matchGenJet1Pt[0] = %f' %matchGenJet1Pt[0]
+
             matchGenJet1Eta[0] = mGenJet1.eta()
             matchGenJet1Phi[0] = mGenJet1.phi()
             matchGenJet1Mass[0] = mGenJet1.mass()
 
             matchGenJet2Pt[0] = mGenJet2.pt()
+            if matchGenJet2Pt[0] < 0:
+                matchGenJet2Pt[0] == 0
+
             matchGenJet2Eta[0] = mGenJet2.eta()
             matchGenJet2Phi[0] = mGenJet2.phi()
             matchGenJet2Mass[0] = mGenJet2.mass()
@@ -394,18 +447,27 @@ for iSample, iLocation in sampleLocations:
         CSVJ2PtUncorr[0], CSVJ2Et[0], CSVJ2Mt[0], CSVJ2ptLeadTrk[0], CSVJ2Vtx3dL[0], CSVJ2Vtx3deL[0], CSVJ2vtxMass[0], CSVJ2VtxPt[0], CSVJ2JECUnc[0], CSVJ2Ntot[0], CSVJ2SoftLeptPtRel[0], CSVJ2SoftLeptPt[0], CSVJ2SoftLeptdR[0] = getRegVars(j2Name, iChain)
 
         if CSVJ1Vtx3dL[0] == -10:
-            CSVJ1Vtx3dL[0] = -99
-            CSVJ1Vtx3deL[0] = -99
-            CSVJ1vtxMass[0] = -99
-            CSVJ1VtxPt[0] = -99
-            CSVJ1ptLeadTrk[0] = -99
+            CSVJ1Vtx3dL[0] = 0
+            CSVJ1Vtx3deL[0] = 0
+            CSVJ1vtxMass[0] = 0
+            CSVJ1VtxPt[0] = 0
+        if CSVJ1ptLeadTrk[0] < 0:
+            CSVJ1ptLeadTrk[0] = 0
 
         if CSVJ2Vtx3dL[0] == -10:
-            CSVJ2Vtx3dL[0] = -99
-            CSVJ2Vtx3deL[0] = -99
-            CSVJ2vtxMass[0] = -99
-            CSVJ2VtxPt[0] = -99
-            CSVJ2ptLeadTrk[0] = -99
+            CSVJ2Vtx3dL[0] = 0
+            CSVJ2Vtx3deL[0] = 0
+            CSVJ2vtxMass[0] = 0
+            CSVJ2VtxPt[0] = 0
+        if CSVJ2ptLeadTrk[0] < 0:
+            CSVJ2ptLeadTrk[0] = 0
+
+        if CSVJ1SoftLeptPtRel[0] == -10:
+            CSVJ1SoftLeptPtRel[0] == 0
+            CSVJ1SoftLeptPt[0] == 0
+        if CSVJ2SoftLeptPtRel[0] == -10:
+            CSVJ2SoftLeptPtRel[0] == 0
+            CSVJ2SoftLeptPt[0] == 0
 
         ptJJ[0] = bb.pt()
         etaJJ[0] = bb.eta()

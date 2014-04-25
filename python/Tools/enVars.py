@@ -25,24 +25,24 @@ signal3Location = "/hdfs/store/user/zmao/H2hh350_3-SUB-TT"
 
 sampleLocations = [
 #                     ("H2hh260",  "/hdfs/store/user/zmao/H2hh260_noSign_relaxed8-SUB-TT"), 
-                    ("H2hh300",  "/hdfs/store/user/zmao/H2hh300_noSign_relaxed8-SUB-TT"),
-                    ("H2hh350",  "/hdfs/store/user/zmao/H2hh350_noSign_relaxed8-SUB-TT"),
+#                     ("H2hh300",  "/hdfs/store/user/zmao/H2hh300_noSign_relaxed8-SUB-TT"),
+#                     ("H2hh350",  "/hdfs/store/user/zmao/H2hh350_noSign_relaxed8-SUB-TT"),
 #                     ("tt_eff", "/hdfs/store/user/zmao/tt_new_noSign_relaxed3-SUB-TT"),
 #                     ("ZZ_eff", "/hdfs/store/user/zmao/ZZ_noSign_relaxed4-SUB-TT"),
 #                     ("tt_semi_eff", "/hdfs/store/user/zmao/tt_SemiLep_noSign_relaxed6-SUB-TT"),
-#                     ('QCD_Pt-30to50', '/hdfs/store/user/zmao/QCD_Pt-30to50_relaxed-SUB-TT'),
-#                     ('QCD_Pt-50to80', '/hdfs/store/user/zmao/QCD_Pt-50to80_relaxed-SUB-TT'),
-#                     ('QCD_Pt-80to120', '/hdfs/store/user/zmao/QCD_Pt-80to120_relaxed-SUB-TT'),
-#                     ('QCD-120to170', '/hdfs/store/user/zmao/QCD_Pt-120to170_relaxed-SUB-TT'),
-#                     ('QCD_Pt-30To50_bEnriched', '/hdfs/store/user/zmao/QCD_Pt-30To50_bEnriched_relaxed-SUB-TT'),
-#                     ('QCD_Pt-50To150_bEnriched', '/hdfs/store/user/zmao/QCD_Pt-50To150_bEnriched_relaxed-SUB-TT'),
-#                     ('QCD_Pt-150_bEnriched', '/hdfs/store/user/zmao/QCD_Pt-150_bEnriched_relaxed-SUB-TT'),
+#                     ('QCD_Pt-30to50', '/hdfs/store/user/zmao/QCD_Pt-30to50_relaxed8-SUB-TT'),
+#                     ('QCD_Pt-50to80', '/hdfs/store/user/zmao/QCD_Pt-50to80_relaxed8-SUB-TT'),
+#                     ('QCD_Pt-80to120', '/hdfs/store/user/zmao/QCD_Pt-80to120_relaxed8-SUB-TT'),
+#                     ('QCD-120to170', '/hdfs/store/user/zmao/QCD_Pt-120to170_relaxed8-SUB-TT'),
+#                     ('QCD_Pt-30To50_bEnriched', '/hdfs/store/user/zmao/QCD_Pt-30To50_bEnriched_relaxed8-SUB-TT'),
+#                     ('QCD_Pt-50To150_bEnriched', '/hdfs/store/user/zmao/QCD_Pt-50To150_bEnriched_relaxed8-SUB-TT'),
+#                     ('QCD_Pt-150_bEnriched', '/hdfs/store/user/zmao/QCD_Pt-150_bEnriched_relaxed8-SUB-TT'),
 #                      ('dataA', '/hdfs/store/user/zmao/Tau_Run2012A_relaxed3-SUB-TT-data/'),
 #                       ('dataB', '/hdfs/store/user/zmao/TauParked_Run2012B_relaxed3-SUB-TT-data/'),
 #                       ('dataC', '/hdfs/store/user/zmao/TauParked_Run2012C_relaxed3-SUB-TT-data/'),
 #                      ('dataD', '/hdfs/store/user/zmao/TauParked_Run2012D_relaxed3-SUB-TT-data/'),
 #                       ('dataTotal', '/scratch/zmao/relaxed_new/data' )
-#                       ('QCDtotal', '/scratch/zmao/relaxed/QCD' )
+                      ('QCDtotal', '/scratch/zmao/relaxed_new/QCD' )
 #                     ('DYJetsToLL_eff', '/hdfs/store/user/zmao/DYJetsToLL_relaxed3-SUB-TT'),
 #                     ('W2JetsToLNu_eff', '/hdfs/store/user/zmao/W2JetsToLNu_relaxed3-SUB-TT/')
                   ]
