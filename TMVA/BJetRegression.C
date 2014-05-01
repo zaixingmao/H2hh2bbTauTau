@@ -145,8 +145,8 @@ void BJetRegression( TString myMethodList = "" )
    std::string inputVariables[] =  {"jetPtUncorr", "jetPt", "jetEt", "jetMt", "jetptLeadTrk",
                                               "jetVtx3dL", "jetVtx3deL", "jetvtxMass", "jetVtxPt",
                                               "jetSoftLeptPtRel", "jetSoftLeptPt",
-                                              "jetSoftLeptdR" , "jetNtot"};
-   for(int ivar = 0; ivar < 13;  ivar++){
+                                              "jetSoftLeptdR" , "jetNtot", "jetJECUnc"}; //
+   for(int ivar = 0; ivar < 14;  ivar++){
         factory->AddVariable( inputVariables[ivar], inputVariables[ivar], "units", 'F' );
     }
    // You can add so-called "Spectator variables", which are not used in the MVA training, 
@@ -166,7 +166,7 @@ void BJetRegression( TString myMethodList = "" )
    // Read training and test data (see TMVAClassification for reading ASCII files)
    // load the signal and background event samples from ROOT trees
    TFile *input(0);
-   TString fname = "/scratch/zmao/regression/allSample_both.root";
+   TString fname = "/scratch/zmao/regression/allSample_both_isobTag.root";
    if (!gSystem->AccessPathName( fname )) 
       input = TFile::Open( fname ); // check if file in local directory exists
    else 
@@ -190,7 +190,7 @@ void BJetRegression( TString myMethodList = "" )
 
    // This would set individual event weights (the variables defined in the 
    // expression need to exist in the original TTree)
-   factory->SetWeightExpression( "triggerEff", "Regression" );
+//    factory->SetWeightExpression( "triggerEff", "Regression" );
 
    // Apply additional cuts on the signal and background samples (can be different)
    TCut mycut = ""; // for example: TCut mycut = "abs(var1)<0.5 && abs(var2-0.5)<1";

@@ -27,7 +27,7 @@
 
 using namespace TMVA;
 
-void BJetRegressionApplication( TString myMethodList = "" ) 
+void BJetRegressionApplication( TString myMethodList = "" , TString sampleName = "") 
 {
    //---------------------------------------------------------------
    // This loads the library
@@ -90,9 +90,10 @@ void BJetRegressionApplication( TString myMethodList = "" )
 
    // Create a set of variables and declare them to the reader
    // - the variable names MUST corresponds in name and type to those given in the weight file(s) used
-   Float_t jetPtUncorr, jetPt, jetEt, jetMt, jetptLeadTrk, jetVtx3dL, jetNtot;
+   Float_t jetPtUncorr, jetPt, jetEt, jetMt, jetPhi,jetMass, jetEta, jetptLeadTrk, jetVtx3dL, jetNtot, jetJECUnc;
    Float_t jetVtx3deL, jetvtxMass, jetVtxPt, jetSoftLeptPtRel, jetSoftLeptPt, jetSoftLeptdR;
    Float_t CSVJ1PtReg, CSVJ2PtReg, mJJReg;
+   Float_t jet1Eta,  jet1Phi, jet1Mass;
    TString trainedVar = "jet";
    reader->AddVariable( trainedVar+"PtUncorr", &jetPtUncorr );
    reader->AddVariable( trainedVar+"Pt", &jetPt );
@@ -107,6 +108,7 @@ void BJetRegressionApplication( TString myMethodList = "" )
    reader->AddVariable( trainedVar+"SoftLeptPt", &jetSoftLeptPt );
    reader->AddVariable( trainedVar+"SoftLeptdR", &jetSoftLeptdR );
    reader->AddVariable( trainedVar+"Ntot", &jetNtot); 
+   reader->AddVariable( trainedVar+"JECUnc", &jetJECUnc); 
 
 
    // Spectator variables declared in the training have to be added to the reader, too
@@ -142,8 +144,7 @@ void BJetRegressionApplication( TString myMethodList = "" )
    // we'll later on use only the "signal" events for the test in this example.
    
    TFile *input(0);
-   TString ofileName = "H2hh350_new_all.root";
-   TString fname = "/scratch/zmao/regression/"+ofileName;
+   TString fname = "/scratch/zmao/relaxed_regression/"+sampleName;
    if (!gSystem->AccessPathName( fname )) {
       input = TFile::Open( fname ); // check if file in local directory exists
    } 
@@ -180,18 +181,21 @@ void BJetRegressionApplication( TString myMethodList = "" )
    theTree->SetBranchAddress( "CSVJ1SoftLeptPt", &jetSoftLeptPt );
    theTree->SetBranchAddress( "CSVJ1SoftLeptdR", &jetSoftLeptdR );
    theTree->SetBranchAddress("CSVJ1Ntot", &jetNtot); 
+   theTree->SetBranchAddress("CSVJ1JECUnc", &jetJECUnc); 
 
-   TH1F *cutFlow = (TH1F*)input->Get("preselection");
+   TH1F* cutFlow = (TH1F*)input->Get("preselection");
 
    std::cout << "--- Processing: " << theTree->GetEntries() << " events" << std::endl;
    TStopwatch sw;
    sw.Start();
-   ofileName = "TMVARegApp_"+ofileName;
+   ofileName = "/scratch/zmao/relaxed_regression/TMVARegApp_"+sampleName;
    TFile *target  = new TFile( ofileName,"RECREATE" );
    TTree *newTree = theTree->CloneTree();
    TBranch *branchJ1PtReg = newTree->Branch("CSVJ1PtReg",&CSVJ1PtReg,"CSVJ1PtReg/F");
    TBranch *branchJ2PtReg = newTree->Branch("CSVJ2PtReg",&CSVJ2PtReg,"CSVJ2PtReg/F");
+   TBranch *branchMJJReg = newTree->Branch("mJJReg",&mJJReg,"mJJReg/F");
 
+   std::vector<double> csvJ1PtReg;
    for (Long64_t ievt=0; ievt<theTree->GetEntries();ievt++) {
       if (ievt%1000 == 0) {
          std::cout << "--- ... Processing event: " << ievt << std::endl;
@@ -202,9 +206,16 @@ void BJetRegressionApplication( TString myMethodList = "" )
       for (Int_t ih=0; ih<nhists; ih++) {
          TString title = hists[ih]->GetTitle();
          CSVJ1PtReg = (reader->EvaluateRegression( title ))[0];
-         branchJ1PtReg->Fill();
+         csvJ1PtReg.push_back(CSVJ1PtReg);
+	 branchJ1PtReg->Fill();
       }
    }
+   theTree->SetBranchAddress( "CSVJ1Eta", &jet1Eta );
+   theTree->SetBranchAddress( "CSVJ1Phi", &jet1Phi );
+   theTree->SetBranchAddress( "CSVJ1Mass", &jet1Mass );
+   theTree->SetBranchAddress( "CSVJ2Eta", &jetEta );
+   theTree->SetBranchAddress( "CSVJ2Phi", &jetPhi );
+   theTree->SetBranchAddress( "CSVJ2Mass", &jetMass );
 
    theTree->SetBranchAddress( "CSVJ2PtUncorr", &jetPtUncorr );
    theTree->SetBranchAddress( "CSVJ2Pt", &jetPt );
@@ -220,6 +231,9 @@ void BJetRegressionApplication( TString myMethodList = "" )
    theTree->SetBranchAddress( "CSVJ2SoftLeptPt", &jetSoftLeptPt );
    theTree->SetBranchAddress( "CSVJ2SoftLeptdR", &jetSoftLeptdR );
    theTree->SetBranchAddress("CSVJ2Ntot", &jetNtot); 
+   theTree->SetBranchAddress("CSVJ2JECUnc", &jetJECUnc); 
+
+   ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>> j1, j2;
 
    for (Long64_t ievt=0; ievt<theTree->GetEntries();ievt++) {
       if (ievt%1000 == 0) {
@@ -232,6 +246,10 @@ void BJetRegressionApplication( TString myMethodList = "" )
          TString title = hists[ih]->GetTitle();
          CSVJ2PtReg = (reader->EvaluateRegression( title ))[0];
          branchJ2PtReg->Fill();
+	 j1.SetCoordinates(csvJ1PtReg[ievt], jet1Eta, jet1Phi, jet1Mass);
+	 j2.SetCoordinates(CSVJ2PtReg, jetEta, jetPhi, jetMass);
+	 mJJReg = (j1+j2).mass();
+	 branchMJJReg->Fill();
       }
    }
 
@@ -239,6 +257,7 @@ void BJetRegressionApplication( TString myMethodList = "" )
    std::cout << "--- End of event loop: "; sw.Print();
 
    // --- Write histograms
+   //   target->cd();
    cutFlow->Write();
    newTree->Write();
 //    target->Write();
