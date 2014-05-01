@@ -28,8 +28,23 @@ def opts():
     parser.add_option("--i", dest="inputFile", default = '', help="")
     parser.add_option("--v", dest="var", default = 'both', help="")
     parser.add_option("--o", dest="outputFile", default = 'trainSample', help="")
+    parser.add_option("--c", dest="cut", default = 'none', help="")
     options, args = parser.parse_args()
     return options
+
+def passCut(iTree, cut):
+    if 'none' in cut:
+        return True
+    if 'iso' in cut:
+        if iTree.iso1.at(0) < 1.5 and iTree.iso2.at(0) < 1.5:
+            return True
+    if 'bTag' in cut:
+        if iTree.CSVJ1 > 0.679 and iTree.CSVJ2 > 0.244:
+            return True
+    if 'genBMatch' in cut:
+        if iTree.matchGenJet1Pt > 0 and iTree.matchGenJet2Pt > 0:
+            return True
+    return False
 
 options = opts()
 
@@ -50,7 +65,7 @@ jetSoftLeptdR = array('f', [0.])
 matchGenJetPt = array('f', [0.])
 triggerEff = array('f', [0.])
 
-oFile = r.TFile("%s_%s.root" %(options.outputFile, options.var),"recreate")
+oFile = r.TFile("%s_%s_%s.root" %(options.outputFile, options.var, options.cut),"recreate")
 oTree = r.TTree("eventTree", "")
 oTree.Branch("jetPtUncorr", jetPtUncorr, "jetPtUncorr/F")
 oTree.Branch("jetPt", jetPt, "jetPt/F")
@@ -80,7 +95,8 @@ for iFile in fileList:
         r.gStyle.SetOptStat(0)
         tool.printProcessStatus(iCurrent=i, total=total, processName = 'Looping sample %s' %iFile)
         iTree.GetEntry(i)
-
+        if not passCut(iTree, options.cut):
+            continue
         jetPtUncorr[0] = iTree.CSVJ1PtUncorr
         jetPt[0] = iTree.CSVJ1Pt
         jetEt[0] = iTree.CSVJ1Et
@@ -127,4 +143,4 @@ oTree.Write()
 nSaved = oTree.GetEntries()
 oFile.Close()
 
-print 'saved %i events at: %s_%s.root' %(nSaved,options.outputFile, options.var)
+print 'saved %i events at: %s_%s_%s.root' %(nSaved,options.outputFile, options.var, options.cut)

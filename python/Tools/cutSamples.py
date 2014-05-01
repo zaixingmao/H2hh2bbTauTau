@@ -10,7 +10,7 @@ import optparse
 import math
 import varsList
 
-xLabels = ['processedEvents', 'PATSkimmedEvents', 'atLeastOneDiTau', 'ptEta1', 'ptEta2', 'tau1Hadronic', 'tau2Hadronic',
+xLabels = ['processedEvents', 'atLeastOneDiTau', 'ptEta1', 'ptEta2', 'tau1Hadronic', 'tau2Hadronic',
            'muonVeto1', 'muonVeto2', 'eleVeto1', 'eleVeto2', 'isolation1', 'relaxed']
 
 lvClass = r.Math.LorentzVector(r.Math.PtEtaPhiM4D('double'))
@@ -92,7 +92,7 @@ def findGenJet(j1Name, jet1, j2Name, jet2, tChain):
                                 varsList.findVarInChain(tChain, '%sGenEta' %j1Name),
                                 varsList.findVarInChain(tChain, '%sGenPhi' %j1Name),
                                 varsList.findVarInChain(tChain, '%sGenMass' %j2Name))
-    if varsList.findVarInChain(tChain, '%sGenPt' %j1Name) > 0 and varsList.findVarInChain(tChain, '%sGenMass' %j1Name) > 0:
+    if varsList.findVarInChain(tChain, '%sGenPt' %j2Name) > 0 and varsList.findVarInChain(tChain, '%sGenMass' %j2Name) > 0:
         genJet2.SetCoordinates(varsList.findVarInChain(tChain, '%sGenPt' %j2Name),
                                 varsList.findVarInChain(tChain, '%sGenEta' %j2Name),
                                 varsList.findVarInChain(tChain, '%sGenPhi' %j2Name),
@@ -116,17 +116,17 @@ def findGenBJet(jet1, jet2, tChain):
         tmpDR1 = r.Math.VectorUtil.DeltaR(tmpJet, jet1)
         if dR1 > tmpDR1:
             dR1 = tmpDR1
-            genJet1 = tmpJet
+            genJet1.SetCoordinates(tChain.genBPt.at(i), tChain.genBEta.at(i), tChain.genBPhi.at(i), tChain.genBMass.at(i))
 
     for i in range(tChain.genBPt.size()):
         tmpJet.SetCoordinates(tChain.genBPt.at(i), tChain.genBEta.at(i), tChain.genBPhi.at(i), tChain.genBMass.at(i))
         tmpDR2 = r.Math.VectorUtil.DeltaR(tmpJet, jet2)
-        if dR2 > tmpDR2:
+        if dR2 > tmpDR2 and genJet1 != tmpJet:
             dR2 = tmpDR2
-            genJet2 = tmpJet
+            genJet2.SetCoordinates(tChain.genBPt.at(i), tChain.genBEta.at(i), tChain.genBPhi.at(i), tChain.genBMass.at(i))
 
     if genJet1 == genJet2:
-        print 'matched to the same b quark'
+        print '  WARNING:: Matched to the same b quark (b mass = %.3f)' %genJet2.mass() 
     return dR1, genJet1, dR2, genJet2
 
 def getRegVars(jName, tChain):
@@ -409,18 +409,13 @@ for iSample, iLocation in sampleLocations:
                 dRGenJet1Match[0], mGenJet1, dRGenJet2Match[0], mGenJet2 = findGenJet(j1Name, CSVJet1, j2Name, CSVJet2, iChain)
             else:
                 dRGenJet1Match[0], mGenJet1, dRGenJet2Match[0], mGenJet2 = findGenBJet(CSVJet1, CSVJet2, iChain)                
+           
             matchGenJet1Pt[0] = mGenJet1.pt()
-            if matchGenJet1Pt[0] < 0:
-                print 'matchGenJet1Pt[0] = %f' %matchGenJet1Pt[0]
-
             matchGenJet1Eta[0] = mGenJet1.eta()
             matchGenJet1Phi[0] = mGenJet1.phi()
             matchGenJet1Mass[0] = mGenJet1.mass()
 
             matchGenJet2Pt[0] = mGenJet2.pt()
-            if matchGenJet2Pt[0] < 0:
-                matchGenJet2Pt[0] == 0
-
             matchGenJet2Eta[0] = mGenJet2.eta()
             matchGenJet2Phi[0] = mGenJet2.phi()
             matchGenJet2Mass[0] = mGenJet2.mass()

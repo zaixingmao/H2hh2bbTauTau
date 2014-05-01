@@ -55,6 +55,7 @@ regJet2PtOverGenJet2Pt = r.TH2F('regJet2PtOverGenJet2Pt','', ran[0], ran[1], ran
 mJJ = r.TH1F('mJJ','', ran2[0], ran2[1], ran2[2])
 mJJReg = r.TH1F('mJJReg','', ran2[0], ran2[1], ran2[2])
 genMJJReg = r.TH1F('genMJJReg','', ran2[0], ran2[1], ran2[2])
+mJJReg2 = r.TH1F('mJJReg2','', ran2[0], ran2[1], ran2[2])
 
 ifile = r.TFile(options.inputFile)
 iTree = ifile.Get("eventTree")
@@ -72,26 +73,52 @@ for i in range(total):
     genJ1Pt = iTree.matchGenJet1Pt
     genJ2Pt = iTree.matchGenJet2Pt
 
-    regJet1PtOverGenJet1Pt.Fill(genJ1Pt, iTree.CSVJ1PtReg/genJ1Pt, iTree.triggerEff)
-    regJet2PtOverGenJet2Pt.Fill(genJ2Pt, iTree.CSVJ2PtReg/genJ2Pt, iTree.triggerEff)
+    if genJ1Pt != 0 and genJ2Pt != 0:
+        regJet1PtOverGenJet1Pt.Fill(genJ1Pt, iTree.CSVJ1PtReg/genJ1Pt, iTree.triggerEff)
+        jet1PtOverGenJet1Pt.Fill(genJ1Pt, iTree.CSVJ1Pt/genJ1Pt, iTree.triggerEff)
 
-    jet1PtOverGenJet1Pt.Fill(genJ1Pt, iTree.CSVJ1Pt/genJ1Pt, iTree.triggerEff)
-    jet2PtOverGenJet2Pt.Fill(genJ2Pt, iTree.CSVJ2Pt/genJ2Pt, iTree.triggerEff)
+        regJet2PtOverGenJet2Pt.Fill(genJ2Pt, iTree.CSVJ2PtReg/genJ2Pt, iTree.triggerEff)
+        jet2PtOverGenJet2Pt.Fill(genJ2Pt, iTree.CSVJ2Pt/genJ2Pt, iTree.triggerEff)
 
     mJJ.Fill(iTree.mJJ, iTree.triggerEff)
     mJJReg.Fill((j1Reg+j2Reg).mass(), iTree.triggerEff)
     genMJJReg.Fill(iTree.matchGenMJJ, iTree.triggerEff)
-
+    mJJReg2.Fill(iTree.mJJReg, iTree.triggerEff)
 
 legendPosition = (0.5, 0.7, 0.90, 0.88)
-legendPosition3 = (0.3, 0.7, 0.90, 0.88)
+legendPosition3 = (0.1, 0.75, 0.95, 0.9)
 legendHistos1 = [(jet1PtOverGenJet1Pt,"jet pt vs gen jet pt"),
                 (regJet1PtOverGenJet1Pt,"regressed jet pt vs gen jet pt")]
 legendHistos2 = [(jet2PtOverGenJet2Pt,"jet pt vs gen jet pt"),
                 (regJet2PtOverGenJet2Pt,"regressed jet pt vs gen jet pt")]
-legendHistos3 = [(mJJ,"mJJ (mean: %.1f  RMS: %.1f)" %(mJJ.GetMean(), mJJ.GetRMS())), 
-                (mJJReg,"regressed mJJ (mean: %.1f  RMS: %.1f)" %(mJJReg.GetMean(), mJJReg.GetRMS())),
-                (genMJJReg,"gen mJJ (mean: %.1f  RMS: %.1f)" %(genMJJReg.GetMean(), genMJJReg.GetRMS()))
+
+#Gaussian fit for mJJ
+fitRange = [100, 150]
+gaus1 = r.TF1('gaus1', '[0]*exp(-0.5*((x-[1])/[2])^2)', fitRange[0], fitRange[1])
+gaus1.SetLineColor(r.kAzure+8)
+gaus1.SetLineStyle(2)
+gaus1.SetParName(0, 'Constant')
+gaus1.SetParName(1, 'Mean')
+gaus1.SetParName(2, 'Sigma')
+gaus1.SetParameter(0, 100)
+gaus1.SetParameter(1, 125)
+gaus1.SetParameter(2, 10)
+mJJ.Fit("gaus1", "r")
+
+gaus2 = r.TF1('gaus2', '[0]*exp(-0.5*((x-[1])/[2])^2)', fitRange[0], fitRange[1])
+gaus2.SetLineColor(r.kRed)
+gaus2.SetLineStyle(2)
+gaus2.SetParName(0, 'Constant')
+gaus2.SetParName(1, 'Mean')
+gaus2.SetParName(2, 'Sigma')
+gaus2.SetParameter(0, 100)
+gaus2.SetParameter(1, 125)
+gaus2.SetParameter(2, 10)
+mJJReg.Fit("gaus2", "r")
+
+legendHistos3 = [(mJJ,"mJJ (mean: %.1f  RMS: %.1f  resolution: %.1f %%)" %(gaus1.GetParameter(1), gaus1.GetParameter(2), gaus1.GetParameter(2)/gaus1.GetParameter(1)*100)), 
+                (mJJReg,"regressed mJJ (mean: %.1f  RMS: %.1f  resolution: %.1f %%)" %(gaus2.GetParameter(1), gaus2.GetParameter(2), gaus2.GetParameter(2)/gaus2.GetParameter(1)*100)),
+                (genMJJReg,"gen mJJ (mean: %.1f  RMS: %.1f  resolution: %.1f %%)" %(genMJJReg.GetMean(), genMJJReg.GetRMS(), genMJJReg.GetRMS()/genMJJReg.GetMean()*100))
                 ]
 
 print ''
@@ -139,6 +166,10 @@ mJJ.SetFillStyle(3002)
 mJJReg.Draw('same')
 mJJReg.SetLineColor(r.kRed)
 mJJReg.SetLineWidth(2)
+mJJReg2.Draw('same')
+mJJReg2.SetLineColor(r.kOrange)
+mJJReg2.SetLineWidth(2)
+mJJReg2.SetLineStyle(2)
 genMJJReg.Draw('same')
 genMJJReg.SetLineColor(r.kBlack)
 genMJJReg.SetLineWidth(2)
