@@ -8,6 +8,8 @@ import enVars
 import varsList
 import optparse
 import math
+from array import array
+import numpy
 
 def opts():
     parser = optparse.OptionParser()
@@ -53,11 +55,11 @@ def getCombinedError(x, x_e, y, y_e):
 
 def bTagSelection(tree, bTag):
     passCut = 0
-    if bTag == 'True' and tree.CSVJ1 > 0.679 and tree.CSVJ2 > 0.244:
+    if bTag == 'True' and tree.CSVJ1 >= 0.68 and tree.CSVJ2 >= 0.24:
         passCut = 1
     if bTag == 'False':
         passCut = 1
-    if bTag == 'Revert' and (tree.CSVJ1 < 0.679 and tree.CSVJ2 < 0.244):
+    if bTag == 'Revert' and (tree.CSVJ1 < 0.68 and tree.CSVJ2 < 0.24):
         passCut = 1
     return passCut
 
@@ -72,6 +74,28 @@ def passCut(tree, bTag):
         return (iso_count<<1) + sign_count + 1
     else:
         return 0
+
+def findBin(x, nBins, xMin, xMax):
+    bin =  int(nBins*(x-xMin)/(xMax-xMin))
+    if bin >= nBins:
+        return nBins-1
+    else:
+        return bin
+
+def fitMultiDimension(n, MC_i, data_r, MC_r,y,e):
+    func = r.TF3("func","[0]*x +[1]*y - [1]*[0]*z", 0, 200, 0, 2000, 0, 300)
+    func.SetParameters(1, 0.5)
+    func.SetParLimits(0, 0.9, 1.1)
+    dataHist = r.TH3F('dataHist','', 200, 0, 200, 1000, 0, 2000, 300, 0, 300)
+    for i in range(n):
+        bin_x = findBin(MC_i[i], 200, 0, 200)
+        bin_y = findBin(data_r[i], 1000, 0, 2000)
+        bin_z = findBin(MC_r[i], 300, 0, 300)
+        dataHist.SetBinContent(bin_x, bin_y, bin_z, y[i])
+        dataHist.SetBinError(bin_x, bin_y, bin_z, e[i])
+
+    dataHist.Fit(func, '0E')
+    return func.GetParameter(0), func.GetParameter(1)
 
 def addFakeTHStack(hist, stack):
     for iHist in stack.GetHists():
@@ -115,7 +139,7 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
         var_data[j].SetMarkerStyle(8)
         var_data[j].SetMarkerSize(0.9)
         legendHistos.append([])
-        legendHistos[j+1].append((var_data[j], 'observed'))
+        legendHistos[j+1].append((var_data[j], 'observed (%.0f)' %var_data[j].Integral()))
 
     for i in range(len(fileList)): 
         for j in range(4):
@@ -138,43 +162,33 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
             var_background[j].Add(histList[4*i+j])
             legendHistos[j].append((histList[4*i+j], '%s (%.2f)' %(fileList[i][0], histList[4*i+j].Integral())))
 
+    data_i = []
+    MC_i = []
+    data_r = []
+    MC_r = []
+    e  = []
+    data_o = []
+    MC_o = []
+    e_o = []
+
     for i in range(3):
-        QCDHistList.append(r.TH1F('QCD_%i' %(i),"", varRange[0], varRange[1], varRange[2]))
         for j in range(varRange[0]):
             dataValue = var_data[i].GetBinContent(j+1)
             dataError = var_data[i].GetBinError(j+1)
             MCValue = 0
             for k in range(len(fileList)):
                 MCValue +=  histList[4*k+1+i].GetBinContent(j+1)
-            if dataValue - MCValue > 0:
-                QCDHistList[i].SetBinContent(j+1, dataValue - MCValue)
-                QCDHistList[i].SetBinError(j+1, dataError)
-
-    QCDDiff = r.TH1F('QCD_diff',"", varRange[0], varRange[1], varRange[2])
-    QCDDiff2 = r.TH1F('QCD_diff2',"", varRange[0], varRange[1], varRange[2])
-
-    for j in range(varRange[0]):
-        SS_tight_Events = QCDHistList[0].GetBinContent(j+1)
-        OS_Events = QCDHistList[1].GetBinContent(j+1)
-        SS_Events = QCDHistList[2].GetBinContent(j+1)
-        SS_tight_Error = QCDHistList[0].GetBinError(j+1)
-        OS_Error = QCDHistList[1].GetBinError(j+1)
-        SS_Error = QCDHistList[2].GetBinError(j+1)
-        if SS_Events != 0:
-            QCDDiff.SetBinContent(j+1, OS_Events/SS_Events)
-            QCDDiff.SetBinError(j+1, getCombinedError(OS_Events, OS_Error, SS_Events, SS_Error))
-            QCDDiff2.SetBinContent(j+1, SS_tight_Events/SS_Events)
-            QCDDiff2.SetBinError(j+1, getCombinedError(SS_tight_Events, SS_tight_Error, SS_Events, SS_Error))
-    fit1 = r.TF1("fit1","[0]", varRange[1],varRange[2]);
-    fit1.SetParName(0,'scale')
-    QCDDiff.Fit('fit1', '0E')
-    fit1.SetLineStyle(2)
-    fit1.SetLineColor(r.kRed)
-    fit2 = r.TF1("fit2","[0]", varRange[1],varRange[2])
-    fit2.SetParName(0,'scale')
-    QCDDiff2.Fit('fit2', '0E')
-    fit2.SetLineStyle(2)
-    fit2.SetLineColor(r.kRed)
+            if i == 0:
+                data_i.append(dataValue)
+                e.append(dataError)
+                MC_i.append(MCValue)
+            elif i == 1:
+                data_o.append(dataValue)
+                e_o.append(dataError)
+                MC_o.append(MCValue)
+            elif i == 2:
+                data_r.append(dataValue)
+                MC_r.append(MCValue)
 
     DrawSignal = False
     if signalSelection != '':
@@ -208,52 +222,30 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
             print '%s not supported, please use H260, H300 or H350' %signalSelection
 
     if predict == 'True':
+        scale_mc, scale_qcd = fitMultiDimension(varRange[0], MC_i, data_r, MC_r, data_i, e)
+        scale_mc2, scale_qcd2 = fitMultiDimension(varRange[0], MC_o, data_r, MC_r, data_o, e_o)
         relaxed2Tight = r.TH1F('relaxed2Tight','', varRange[0], varRange[1], varRange[2])
-        SS2OS = r.TH1F('SS2OS','', varRange[0], varRange[1], varRange[2])
-        relaxed2Signal = r.TH1F('relaxed2Signal','', varRange[0], varRange[1], varRange[2])
-        SS2OS_signal = r.TH1F('SS2OS_signal','', varRange[0], varRange[1], varRange[2])
-        scale_SS2OS = fit1.GetParameter(0)
-        scale_er_SS2OS = fit1.GetParError(0)
-        scale_relaxed2Tight = fit2.GetParameter(0)
-        scale_er_relaxed2Tight = fit2.GetParError(0)
+        sameS2OppositeS = r.TH1F('sameS2OppositeS','', varRange[0], varRange[1], varRange[2])
+        ss_tight = r.TH1F('ss_tight','', varRange[0], varRange[1], varRange[2])
+        os_relaxed = r.TH1F('os_relaxed','', varRange[0], varRange[1], varRange[2])
+        for i in range(len(fileList)):
+             histList[4*i+1].Scale(scale_mc)
+             histList[4*i+2].Scale(scale_mc2)
+             legendHistos[1][i+1] = (histList[4*i+1], '%s x%.2f (%.2f)' %(fileList[i][0], scale_mc,histList[4*i+1].Integral()))
+             legendHistos[2][i+1] = (histList[4*i+2], '%s x%.2f (%.2f)' %(fileList[i][0], scale_mc2,histList[4*i+2].Integral()))
+             for i in range(varRange[0]):
+                 relaxed2Tight.SetBinContent(i+1, scale_qcd*(data_r[i]-MC_r[i]*scale_mc))
+                 sameS2OppositeS.SetBinContent(i+1, scale_qcd2*(data_r[i]-MC_r[i]*scale_mc2))
+                 ss_tight.SetBinContent(i+1, data_i[i]-MC_i[i])
+                 os_relaxed.SetBinContent(i+1, data_o[i]-MC_o[i])
 
-        for i in range(varRange[0]):
-
-            SS_tight_Events = QCDHistList[0].GetBinContent(i+1)
-            SS_tight_Error = QCDHistList[0].GetBinError(i+1)
-            OS_relaxed_Events = QCDHistList[1].GetBinContent(i+1)
-            OS_relaxed_Error = QCDHistList[1].GetBinError(i+1)
-            SS_Events = QCDHistList[2].GetBinContent(i+1)
-            SS_Error = QCDHistList[2].GetBinError(i+1)
-
-            relaxed2Tight.SetBinContent(i+1, scale_relaxed2Tight*SS_Events)
-            relaxed2Signal.SetBinContent(i+1, scale_relaxed2Tight*OS_relaxed_Events)
-            SS2OS.SetBinContent(i+1, scale_SS2OS*SS_Events)
-            SS2OS_signal.SetBinContent(i+1, scale_SS2OS*SS_tight_Events)
-
-#             relaxed2Tight.SetBinError(i+1, getCombinedError(scale_relaxed2Tight, scale_er_relaxed2Tight, SS_Events, SS_Error))
-#             SS2OS.SetBinError(i+1, getCombinedError(scale_SS2OS, scale_er_SS2OS, SS_Events, SS_Error))
-#             relaxed2Tight.SetLineColor(r.kSpring+8)
         relaxed2Tight.SetFillColor(r.kSpring+1)
-#             SS2OS.SetLineColor(r.kOrange)
-        SS2OS.SetFillColor(r.kOrange-4)
-        SS2OS_signal.SetLineColor(r.kOrange-4)
-        SS2OS_signal.SetLineStyle(2)
-        SS2OS_signal.SetLineWidth(2)
-        relaxed2Signal.SetLineColor(r.kSpring+1)
-        relaxed2Signal.SetLineWidth(2)
-        legendHistos[0].append((SS2OS_signal, 'From SS/Tight (%.0f)' %SS2OS_signal.Integral()))
-        legendHistos[0].append((relaxed2Signal, 'From OS/Relax (%.0f)' %relaxed2Signal.Integral()))
-        var_background[1].Add(relaxed2Tight)
-        var_background[2].Add(SS2OS)
+        sameS2OppositeS.SetFillColor(r.kOrange-4)
         legendHistos[1].append((relaxed2Tight, 'From SS/Relax (%.0f)' %relaxed2Tight.Integral()))
-        legendHistos[2].append((SS2OS, 'From SS/Relax (%.0f)' %SS2OS.Integral()))
-        relaxed2Signal = addFakeTHStack(relaxed2Signal,var_background[0])
-        var_background[0].Add(SS2OS_signal)
+        legendHistos[2].append((sameS2OppositeS, 'From SS/Relax (%.0f)' %sameS2OppositeS.Integral()))
+        var_background[1].Add(relaxed2Tight)
+        var_background[2].Add(sameS2OppositeS)
 
-
-
-    legendPosition = (0.6, 0.7, 0.90, 0.88)
     l = []
     r.gROOT.SetBatch(True)  # to suppress canvas pop-outs
     if bTag == 'True':
@@ -280,51 +272,33 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
         var_background[k].SetMaximum(max)
         var_background[k].SetMinimum(0.01)
         var_background[k].Draw()
-        if predict == 'True' and k == 0:
-            relaxed2Signal.Draw('same')
         if k != 0:
             var_data[k-1].Draw('PE same')
-        legendPosition = (0.63, 0.93 - 0.035*len(legendHistos[k]), 0.93, 0.9)
+        legendPosition = (0.5, 0.93 - 0.035*len(legendHistos[k]), 0.93, 0.9)
         l.append(tool.setMyLegend(lPosition=legendPosition, lHistList=legendHistos[k]))
         l[k].Draw('same')
         var_signal[k].Draw('same')
     c.Update()
     c.Print('%s(' %psfile)
     c.cd(1)
-    r.gPad.SetLogy(0)
-    QCDDiff.SetTitle('OS/SS MultiJet Relaxed Events %s (%.1f fb^{-1}); %s; OS/SS' %(titleName, Lumi,varName))
-    QCDDiff.SetMarkerStyle(8)
-    QCDDiff.SetMarkerSize(0.9)
-    QCDDiff.SetMaximum(2)
-    QCDDiff.SetMinimum(0)
-    QCDDiff.Draw('PE')
-    fit1.Draw('same')
-    lFit1 = tool.setMyLegend((0.15, 0.7, 0.9, 0.85),[(fit1,'Scale between OS/SS in relaxed region: %.2f \pm %.2f' %(fit1.GetParameter(0), fit1.GetParError(0)))])
-    lFit1.Draw('same')
-    for k in range(3):
-        c.cd(k+2)
-        if logY == 'True':
-            r.gPad.SetLogy()
-        signSelection, iso = conditions(k+2)
-        QCDHistList[k].SetTitle('%s %s Data - MC Events %s (%.1f fb^{-1}); %s; events / bin' %(signSelection, iso, titleName, Lumi,varName))
-        QCDHistList[k].SetMarkerStyle(8)
-        QCDHistList[k].SetMarkerSize(0.9)
-        QCDHistList[k].SetMaximum(max)
-        QCDHistList[k].SetMinimum(1)
-        QCDHistList[k].Draw('PE')
+    l1 = tool.setMyLegend(lPosition=(0.5,0.7,0.93,0.9), lHistList=[(sameS2OppositeS, 'from SS/Relaxed (%.2f)' %sameS2OppositeS.Integral()),
+                                                                   (os_relaxed, 'Data - MC x%.2f (%.2f)' %(scale_mc2, os_relaxed.Integral()))])
+    sameS2OppositeS.Draw()
+    sameS2OppositeS.SetTitle('QCD background in OS Relaxed Region %s (%.1f fb^{-1}); %s; events / bin' %(titleName,Lumi,varName))
+    os_relaxed.SetLineWidth(2)
+    os_relaxed.SetLineStyle(2)
+    os_relaxed.Draw('same')
+    l1.Draw('same')
+    c.cd(2)
+    l2 = tool.setMyLegend(lPosition=(0.5,0.7,0.93,0.9), lHistList=[(relaxed2Tight, 'from SS/Relaxed (%.2f)' %relaxed2Tight.Integral()),
+                                                                   (ss_tight, 'Data - MC x%.2f (%.2f)' %(scale_mc, ss_tight.Integral()))])
+    relaxed2Tight.SetTitle('QCD background in SS Tight Region %s (%.1f fb^{-1}); %s; events / bin' %(titleName,Lumi,varName))
+    relaxed2Tight.Draw()
+    ss_tight.SetLineWidth(2)
+    ss_tight.SetLineStyle(2)
+    ss_tight.Draw('same')
+    l2.Draw('same')
     c.Update()
-    c.Print('%s' %psfile)
-    c.cd(1)
-    r.gPad.SetLogy(0)
-    QCDDiff2.SetTitle('tight/relaxed MultiJet SS Events %s (%.1f fb^{-1}); %s; tight/relaxed' %(titleName, Lumi,varName))
-    QCDDiff2.SetMarkerStyle(8)
-    QCDDiff2.SetMarkerSize(0.9)
-    QCDDiff2.SetMinimum(0)
-    QCDDiff2.SetMaximum(0.5)
-    QCDDiff2.Draw('PE')
-    fit2.Draw('same')
-    lFit2 = tool.setMyLegend((0.15, 0.7, 0.9, 0.85),[(fit2,'Scale between OS/SS in relaxed region: %.2f \pm %.2f' %(fit2.GetParameter(0), fit2.GetParError(0)))])
-    lFit2.Draw('same')
     c.Print('%s)' %psfile)
     #ps.Close()
     print "Plot saved at %s" %(psfile)
