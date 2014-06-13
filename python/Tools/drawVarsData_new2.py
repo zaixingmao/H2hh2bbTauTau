@@ -26,7 +26,6 @@ def opts():
     parser.add_option("--bTag", dest="bTag", default = 'True', help="")
     parser.add_option("--predict", dest="predict", default = 'False', help="")
 
-
     options, args = parser.parse_args()
     return options
 
@@ -106,11 +105,17 @@ def addFakeTHStack(hist, stack):
 
 def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, rangeMin, rangeMax, location, bTag, predict):
     r.gStyle.SetOptStat(0)
-    fileList = [('ZZ', 'ZZ_eff_all.root', 2500, 5),
-                ('tt_full_lep','tt_eff_all.root', 26197.5, r.kRed-7),
-                ('tt_semi_lep','tt_semi_eff_all.root', 109281, r.kAzure+7),
-                ('DYJetsToLL', 'DYJetsToLL_eff_all.root', 3504000, r.kGreen-7),
-                ('W2JetsToLNu', 'W2JetsToLNu_eff_all.root', 1750000, r.kMagenta-9)]
+    preFix = 'TMVAClassApp_TMVARegApp_'
+
+    fileList = [('ZZ', preFix + 'ZZ_eff_all.root', 2500, 5),
+                ('tt_full_lep',preFix+'tt_eff_all.root', 26197.5, r.kRed-7),
+                ('tt_semi_lep',preFix+'tt_semi_eff_all.root', 109281, r.kAzure+7),
+#                 ('DYJetsToLL', 'DYJetsToLL_eff_all.root', 3504000, r.kGreen-7),
+                ('DY2JetsToLL', preFix+'DY2JetsToLL_eff_all.root', 181000, r.kGreen-7),
+                ('DY3JetsToLL', preFix+'DY3JetsToLL_eff_all.root', 51100, r.kGreen-7),
+                ('W1JetsToLNu', preFix+'W1JetsToLNu_eff_all.root', 5400000, r.kMagenta-9),
+                ('W2JetsToLNu', preFix+'W2JetsToLNu_eff_all.root', 1750000, r.kMagenta-9),
+                ('W3JetsToLNu', preFix+'W3JetsToLNu_eff_all.root', 519000, r.kMagenta-9)]
     histList = []
     QCDHistList = []
     varRange = [nbins, rangeMin, rangeMax]
@@ -125,9 +130,10 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
 
     for i in range(3):
         var_data.append(r.TH1F('data_%i' %(i),"", varRange[0], varRange[1], varRange[2]))
-    fData = r.TFile('dataTotal_all.root')
+    dataName = preFix + 'dataTotal_all.root'
+    fData = r.TFile(dataName)
     treeData = fData.Get('eventTree')
-    print 'Adding events from: dataTotal_all.root ...'
+    print 'Adding events from: %s ...' %dataName
     for iEntry in range(treeData.GetEntries()):
         treeData.GetEntry(iEntry)
         select = passCut(treeData, bTag)
@@ -195,9 +201,9 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
         var_signal = []
         for i in range(4):
             var_signal.append(r.TH1F('%s_%i' %(signalSelection,i),"", varRange[0], varRange[1], varRange[2]))
-        signalDict = {'H260': ('H2hh260_all.root', 14.76),
-                      'H300': ('H2hh300_all.root', 15.9),
-                      'H350': ('H2hh350_all.root', 8.57)}
+        signalDict = {'H260': (preFix+'H2hh260_all.root', 14.76),
+                      'H300': (preFix+'H2hh300_all.root', 15.9),
+                      'H350': (preFix+'H2hh350_all.root', 8.57)}
         if signalSelection in signalDict:
             fSignal = r.TFile(signalDict[signalSelection][0])
             treeSignal = fSignal.Get('eventTree')
@@ -228,23 +234,39 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
         sameS2OppositeS = r.TH1F('sameS2OppositeS','', varRange[0], varRange[1], varRange[2])
         ss_tight = r.TH1F('ss_tight','', varRange[0], varRange[1], varRange[2])
         os_relaxed = r.TH1F('os_relaxed','', varRange[0], varRange[1], varRange[2])
-        for i in range(len(fileList)):
-             histList[4*i+1].Scale(scale_mc)
-             histList[4*i+2].Scale(scale_mc2)
-             legendHistos[1][i+1] = (histList[4*i+1], '%s x%.2f (%.2f)' %(fileList[i][0], scale_mc,histList[4*i+1].Integral()))
-             legendHistos[2][i+1] = (histList[4*i+2], '%s x%.2f (%.2f)' %(fileList[i][0], scale_mc2,histList[4*i+2].Integral()))
-             for i in range(varRange[0]):
-                 relaxed2Tight.SetBinContent(i+1, scale_qcd*(data_r[i]-MC_r[i]*scale_mc))
-                 sameS2OppositeS.SetBinContent(i+1, scale_qcd2*(data_r[i]-MC_r[i]*scale_mc2))
-                 ss_tight.SetBinContent(i+1, data_i[i]-MC_i[i])
-                 os_relaxed.SetBinContent(i+1, data_o[i]-MC_o[i])
+        ost_fromRelaxed = r.TH1F('ost_fromRelaxed','', varRange[0], varRange[1], varRange[2])
+        ost_fromSameSign = r.TH1F('ost_fromSameSign','', varRange[0], varRange[1], varRange[2])
 
+        for i in range(len(fileList)):
+            histList[4*i+1].Scale(scale_mc)
+            histList[4*i+2].Scale(scale_mc2)
+            legendHistos[1][i+1] = (histList[4*i+1], '%s x%.2f (%.2f)' %(fileList[i][0], scale_mc,histList[4*i+1].Integral()))
+            legendHistos[2][i+1] = (histList[4*i+2], '%s x%.2f (%.2f)' %(fileList[i][0], scale_mc2,histList[4*i+2].Integral()))
+            for i in range(varRange[0]):
+                relaxed2Tight.SetBinContent(i+1, scale_qcd*(data_r[i]-MC_r[i]*scale_mc))
+                sameS2OppositeS.SetBinContent(i+1, scale_qcd2*(data_r[i]-MC_r[i]*scale_mc2))
+                ost_fromRelaxed.SetBinContent(i+1, scale_qcd*(data_o[i]-MC_o[i]*scale_mc))
+                ost_fromSameSign.SetBinContent(i+1, scale_qcd2*(data_i[i]-MC_i[i]*scale_mc2))
+                    
+                ss_tight.SetBinContent(i+1, data_i[i]-MC_i[i])
+                os_relaxed.SetBinContent(i+1, data_o[i]-MC_o[i])
+
+        ost_fromSameSign.SetLineColor(r.kSpring+1)
+        ost_fromRelaxed.SetLineColor(r.kOrange-4)
+        ost_fromSameSign.SetLineWidth(2)
+        ost_fromRelaxed.SetLineWidth(2)
+        ost_fromRelaxed.SetLineStyle(2)
         relaxed2Tight.SetFillColor(r.kSpring+1)
         sameS2OppositeS.SetFillColor(r.kOrange-4)
         legendHistos[1].append((relaxed2Tight, 'From SS/Relax (%.0f)' %relaxed2Tight.Integral()))
         legendHistos[2].append((sameS2OppositeS, 'From SS/Relax (%.0f)' %sameS2OppositeS.Integral()))
+        legendHistos[0].append((ost_fromSameSign, 'From SS/Tight (%.0f)' %ost_fromSameSign.Integral()))
+        legendHistos[0].append((ost_fromRelaxed, 'From OS/Relax (%.0f)' %ost_fromRelaxed.Integral()))
         var_background[1].Add(relaxed2Tight)
         var_background[2].Add(sameS2OppositeS)
+
+        ost_fromRelaxed = tool.addFakeTHStack(ost_fromRelaxed,var_background[0], scale_mc)
+        ost_fromSameSign = tool.addFakeTHStack(ost_fromSameSign,var_background[0], scale_mc2)
 
     l = []
     r.gROOT.SetBatch(True)  # to suppress canvas pop-outs
@@ -272,33 +294,38 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
         var_background[k].SetMaximum(max)
         var_background[k].SetMinimum(0.01)
         var_background[k].Draw()
-        if k != 0:
+        if k == 0 and useData == 'True' and predict == 'True':
+            ost_fromSameSign.Draw('same')
+            ost_fromRelaxed.Draw('same')
+
+        if k != 0 and useData == 'True':
             var_data[k-1].Draw('PE same')
-        legendPosition = (0.5, 0.93 - 0.035*len(legendHistos[k]), 0.93, 0.9)
+        legendPosition = (0.63, 0.93 - 0.035*len(legendHistos[k]), 0.93, 0.9)
         l.append(tool.setMyLegend(lPosition=legendPosition, lHistList=legendHistos[k]))
         l[k].Draw('same')
         var_signal[k].Draw('same')
     c.Update()
     c.Print('%s(' %psfile)
-    c.cd(1)
-    l1 = tool.setMyLegend(lPosition=(0.5,0.7,0.93,0.9), lHistList=[(sameS2OppositeS, 'from SS/Relaxed (%.2f)' %sameS2OppositeS.Integral()),
+    if predict == 'True':
+        c.cd(1)
+        l1 = tool.setMyLegend(lPosition=(0.5,0.7,0.93,0.9), lHistList=[(sameS2OppositeS, 'from SS/Relaxed (%.2f)' %sameS2OppositeS.Integral()),
                                                                    (os_relaxed, 'Data - MC x%.2f (%.2f)' %(scale_mc2, os_relaxed.Integral()))])
-    sameS2OppositeS.Draw()
-    sameS2OppositeS.SetTitle('QCD background in OS Relaxed Region %s (%.1f fb^{-1}); %s; events / bin' %(titleName,Lumi,varName))
-    os_relaxed.SetLineWidth(2)
-    os_relaxed.SetLineStyle(2)
-    os_relaxed.Draw('same')
-    l1.Draw('same')
-    c.cd(2)
-    l2 = tool.setMyLegend(lPosition=(0.5,0.7,0.93,0.9), lHistList=[(relaxed2Tight, 'from SS/Relaxed (%.2f)' %relaxed2Tight.Integral()),
+        sameS2OppositeS.Draw()
+        sameS2OppositeS.SetTitle('QCD background in OS Relaxed Region %s (%.1f fb^{-1}); %s; events / bin' %(titleName,Lumi,varName))
+        os_relaxed.SetLineWidth(2)
+        os_relaxed.SetLineStyle(2)
+        os_relaxed.Draw('same')
+        l1.Draw('same')
+        c.cd(2)
+        l2 = tool.setMyLegend(lPosition=(0.5,0.7,0.93,0.9), lHistList=[(relaxed2Tight, 'from SS/Relaxed (%.2f)' %relaxed2Tight.Integral()),
                                                                    (ss_tight, 'Data - MC x%.2f (%.2f)' %(scale_mc, ss_tight.Integral()))])
-    relaxed2Tight.SetTitle('QCD background in SS Tight Region %s (%.1f fb^{-1}); %s; events / bin' %(titleName,Lumi,varName))
-    relaxed2Tight.Draw()
-    ss_tight.SetLineWidth(2)
-    ss_tight.SetLineStyle(2)
-    ss_tight.Draw('same')
-    l2.Draw('same')
-    c.Update()
+        relaxed2Tight.SetTitle('QCD background in SS Tight Region %s (%.1f fb^{-1}); %s; events / bin' %(titleName,Lumi,varName))
+        relaxed2Tight.Draw()
+        ss_tight.SetLineWidth(2)
+        ss_tight.SetLineStyle(2)
+        ss_tight.Draw('same')
+        l2.Draw('same')
+        c.Update()
     c.Print('%s)' %psfile)
     #ps.Close()
     print "Plot saved at %s" %(psfile)

@@ -336,11 +336,18 @@ def addHistFromFiles(dirName, histName, hist, xAxisLabels = ['']):
                 print 'skipping file: %s' %(fName)
                 continue
             tmpHist = ifile.Get(histName)
+            nBins = tmpHist.GetNbinsX()
             for i in range(len(xAxisLabels)):
-                hist.Fill(xAxisLabels[i],tmpHist.GetBinContent(i+1))
+                if i+1 <= nBins: 
+                    hist.Fill(xAxisLabels[i],tmpHist.GetBinContent(i+1))
+                else:
+                    hist.Fill(xAxisLabels[i], 0)
             added+=1.
             printProcessStatus(iCurrent=added, total=totalAmount, processName = 'Adding Histogram from files in [%s]' %dirName)
     print ""
+
+def addEventsCount2Hist(hist, count, labelName):
+    hist.Fill(labelName, count)
 
 def reWeightROOTFile(fileName, treeName, weight = 1.0):
     oldFile = r.TFile(fileName, "READ")
@@ -361,3 +368,16 @@ def calc(iChain):#
 #     else:
 #         return False
     return True
+
+def addFakeTHStack(hist, stack, scale = 1.0):
+    for iHist in stack.GetHists():
+        for i in range(iHist.GetNbinsX()):
+            currentValue = hist.GetBinContent(i+1)
+            if currentValue < 0:
+                currentValue = 0
+            hist.SetBinContent(i+1,currentValue + iHist.GetBinContent(i+1)*scale)
+            a = currentValue + iHist.GetBinContent(i+1)*scale
+            b = iHist.GetBinContent(i+1)
+            if a < b:
+                print a, b, currentValue
+    return hist

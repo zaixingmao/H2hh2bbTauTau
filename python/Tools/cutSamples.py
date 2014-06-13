@@ -10,8 +10,8 @@ import optparse
 import math
 import varsList
 
-xLabels = ['processedEvents', 'atLeastOneDiTau', 'ptEta1', 'ptEta2', 'tau1Hadronic', 'tau2Hadronic',
-           'muonVeto1', 'muonVeto2', 'eleVeto1', 'eleVeto2', 'isolation1', 'relaxed']
+xLabels = ['processedEvents', 'PATSkimmedEvents', 'atLeastOneDiTau', 'ptEta1', 'ptEta2', 'tau1Hadronic', 
+	   'tau2Hadronic','muonVeto1', 'muonVeto2', 'eleVeto1', 'eleVeto2', 'isolation1', 'relaxed', 'myCut']
 
 lvClass = r.Math.LorentzVector(r.Math.PtEtaPhiM4D('double'))
 J1 = lvClass()
@@ -180,7 +180,7 @@ preVarList = ['EVENT', 'HMass', 'svMass', 'svPt', 'svEta', 'svPhi', 'J1Pt', 'J1E
            'J3PtUncorr', 'J3VtxPt', 'J3Vtx3dL', 'J3Vtx3deL', 'J3ptLeadTrk', 'J3vtxMass', 'J3vtxPt', 'J3Ntot', 
            'J3SoftLepPt', 'J3SoftLepEta', 'J3SoftLepPhi', 'J3SoftLepPID', 'J3JECUnc', 'J3Et', 'J3Mt',
            'J4PtUncorr', 'J4VtxPt', 'J4Vtx3dL', 'J4Vtx3deL', 'J4ptLeadTrk', 'J4vtxMass', 'J4vtxPt', 'J4Ntot', 
-           'J4SoftLepPt', 'J4SoftLepEta', 'J4SoftLepPhi', 'J4SoftLepPID', 'J4JECUnc', 'J4Et', 'J4Mt',
+           'J4SoftLepPt', 'J4SoftLepEta', 'J4SoftLepPhi', 'J4SoftLepPID', 'J4JECUnc', 'J4Et', 'J4Mt', 'tauDecayMode1', 'tauDecayMode2'
           ]
 genVarList = ['genBPt', 'genBEta', 'genBPhi','genBMass', 'genTauPt', 'genTauEta', 'genTauPhi', 'genElePt', 'genEleEta', 
               'genElePhi', 'genMuPt', 'genMuEta', 'genMuPhi','J1GenPt', 'J1GenEta', 'J1GenPhi', 'J1GenMass',
@@ -203,7 +203,7 @@ for iSample, iLocation in sampleLocations:
         isData = False
         varList = fullVarList
 
-    cutFlow = r.TH1F()
+    cutFlow = r.TH1F('cutFlow', '', len(xLabels), 0, len(xLabels))
     if options.addFiles == 'True':
         tool.addHistFromFiles(dirName=iLocation, histName = "preselection", hist = cutFlow, xAxisLabels=xLabels)
     else:
@@ -486,11 +486,13 @@ for iSample, iLocation in sampleLocations:
         eff1 = calcTrigOneTauEff(eta=iChain.eta1.at(0), pt=iChain.pt1.at(0), data = True, fitStart=25)
         eff2 = calcTrigOneTauEff(eta=iChain.eta2.at(0), pt=iChain.pt2.at(0), data = True, fitStart=25)
         triggerEff[0] = eff1*eff2
+        if isData:
+            triggerEff[0] = 1
         iTree.Fill()
         counter += 1
         tool.printProcessStatus(iEntry, nEntries, 'Saving to file %s.root' %(iSample))
     print '  -- saved %d events' %(counter)
-
+    tool.addEventsCount2Hist(hist = cutFlow, count = counter, labelName = 'myCut')
     iFile.cd()
     cutFlow.Write()
     iTree.Write()

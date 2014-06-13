@@ -24,12 +24,12 @@ signal2Location = "/hdfs/store/user/zmao/H2hh300_3-SUB-TT"
 signal3Location = "/hdfs/store/user/zmao/H2hh350_3-SUB-TT"
 
 sampleLocations = [
-                     ("H2hh260",  "/hdfs/store/user/zmao/H2hh260_noSign_relaxed9-SUB-TT"), 
-                     ("H2hh300",  "/hdfs/store/user/zmao/H2hh300_noSign_relaxed9-SUB-TT"),
-                     ("H2hh350",  "/hdfs/store/user/zmao/H2hh350_noSign_relaxed9-SUB-TT"),
-                     ("tt_eff", "/hdfs/store/user/zmao/tt_new_noSign_relaxed8-SUB-TT"),
-                     ("ZZ_eff", "/hdfs/store/user/zmao/ZZ_noSign_relaxed8-SUB-TT"),
-                     ("tt_semi_eff", "/hdfs/store/user/zmao/tt_SemiLep_noSign_relaxed8-SUB-TT"),
+#                     ("H2hh260",  "/hdfs/store/user/zmao/H2hh260_noSign_relaxed9-SUB-TT"), 
+#                     ("H2hh300",  "/hdfs/store/user/zmao/H2hh300_noSign_relaxed9-SUB-TT"),
+#                     ("H2hh350",  "/hdfs/store/user/zmao/H2hh350_noSign_relaxed9-SUB-TT"),
+#                     ("tt_eff", "/hdfs/store/user/zmao/tt_new_noSign_relaxed8-SUB-TT"),
+#                     ("ZZ_eff", "/hdfs/store/user/zmao/ZZ_noSign_relaxed8-SUB-TT"),
+#                     ("tt_semi_eff", "/hdfs/store/user/zmao/tt_SemiLep_noSign_relaxed8-SUB-TT"),
 #                     ('QCD_Pt-30to50', '/hdfs/store/user/zmao/QCD_Pt-30to50_relaxed8-SUB-TT'),
 #                     ('QCD_Pt-50to80', '/hdfs/store/user/zmao/QCD_Pt-50to80_relaxed8-SUB-TT'),
 #                     ('QCD_Pt-80to120', '/hdfs/store/user/zmao/QCD_Pt-80to120_relaxed8-SUB-TT'),
@@ -37,18 +37,22 @@ sampleLocations = [
 #                     ('QCD_Pt-30To50_bEnriched', '/hdfs/store/user/zmao/QCD_Pt-30To50_bEnriched_relaxed8-SUB-TT'),
 #                     ('QCD_Pt-50To150_bEnriched', '/hdfs/store/user/zmao/QCD_Pt-50To150_bEnriched_relaxed8-SUB-TT'),
 #                     ('QCD_Pt-150_bEnriched', '/hdfs/store/user/zmao/QCD_Pt-150_bEnriched_relaxed8-SUB-TT'),
-#                     ('dataA', '/hdfs/store/user/zmao/Tau_Run2012A_relaxed3-SUB-TT-data/'),
-#                       ('dataB', '/hdfs/store/user/zmao/TauParked_Run2012B_relaxed3-SUB-TT-data/'),
-#                       ('dataC', '/hdfs/store/user/zmao/TauParked_Run2012C_relaxed3-SUB-TT-data/'),
-#                      ('dataD', '/hdfs/store/user/zmao/TauParked_Run2012D_relaxed3-SUB-TT-data/'),
-#                       ('dataTotal', '/scratch/zmao/relaxed_new/data' )
-#                       ('QCDtotal', '/scratch/zmao/relaxed_new/QCD' )
-                     ('DYJetsToLL_eff', '/hdfs/store/user/zmao/DYJetsToLL_relaxed8-SUB-TT'),
-                     ('W2JetsToLNu_eff', '/hdfs/store/user/zmao/W2JetsToLNu_relaxed8-SUB-TT/')
+#                     ('dataA', '/hdfs/store/user/zmao/Tau_Run2012A_relaxed8-SUB-TT-data/'),
+#                     ('dataB', '/hdfs/store/user/zmao/TauParked_Run2012B_relaxed8-SUB-TT-data/'),
+#                     ('dataC', '/hdfs/store/user/zmao/TauParked_Run2012C_relaxed8-SUB-TT-data/'),
+#                     ('dataD', '/hdfs/store/user/zmao/TauParked_Run2012D_relaxed8-SUB-TT-data/'),
+                    ('dataTotal', '/scratch/zmao/relaxed_regression3/data' ),
+#                     ('QCDtotal_bEnriched', '/scratch/zmao/QCD/bEnriched' ),
+#                     ('DYJetsToLL_eff', '/hdfs/store/user/zmao/DYJetsToLL_relaxed8-SUB-TT'),
+#                     ('DY1JetsToLL_eff2', '/hdfs/store/user/zmao/DY1JetsToLL_relaxed9-SUB-TT'),
+#                     ('DY2JetsToLL_eff2', '/hdfs/store/user/zmao/DY2JetsToLL_relaxed9-SUB-TT'),
+#                     ('DY3JetsToLL_eff2', '/hdfs/store/user/zmao/DY3JetsToLL_relaxed9-SUB-TT'),
+#                     ('W1JetsToLNu_eff2', '/hdfs/store/user/zmao/W1JetsToLNu_relaxed9-SUB-TT'),
+#                     ('W2JetsToLNu_eff2', '/hdfs/store/user/zmao/W2JetsToLNu_relaxed9-SUB-TT'),
+#                     ('W3JetsToLNu_eff2', '/hdfs/store/user/zmao/W3JetsToLNu_relaxed9-SUB-TT'),
+#                     ('WZJetsTo2L2Q_eff', '/hdfs/store/user/zmao/WZJetsTo2L2Q_relaxed8-SUB-TT'),
                   ]
 
-#sampleLocations = [("H2hh350_test", "/hdfs/store/user/zmao/H2hh350_test-SUB-TT")
-#                  ]
 
 vecVarList = ['pt1', 'pt2', 'iso1', 'iso2', 'eta1', 'eta2', 'phi1', 'phi2', 'svEta', 'svMass', 'svPhi', 'svPt']
 
