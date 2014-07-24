@@ -76,7 +76,7 @@ def makeSyncNtuples(iLocation):
     print nEntries
     iTree.SetBranchStatus("*",1)
 
-    oFile = r.TFile("HTT_2.root" ,"recreate")
+    oFile = r.TFile("HTT_mvaMET.root" ,"recreate")
     oTree = r.TTree('TauCheck', 'TauCheck')
 
     run  = array('i', [0])
@@ -138,8 +138,8 @@ def makeSyncNtuples(iLocation):
     pzetamiss = array('f', [0.])
 
     pt_tt = array('f', [0.])
-    njets = array('f', [0.])
-    njetspt20 = array('f', [0.])
+    njets = array('i', [0])
+    njetspt20 = array('i', [0])
 
     jpt_1 = array('f', [0.])
     jeta_1 = array('f', [0.])
@@ -178,7 +178,7 @@ def makeSyncNtuples(iLocation):
 
     m_bb = array('f', [0.])
     m_ttbb = array('f', [0.])
-    nbtag = array('f', [0.])
+    nbtag = array('i', [0])
 
     oTree.Branch("run", run, "run/I")
     oTree.Branch("lumi", lumi, "lumi/I")
@@ -239,8 +239,9 @@ def makeSyncNtuples(iLocation):
     oTree.Branch("pzetamiss", pzetamiss, "pzetamiss/F")
 
     oTree.Branch("pt_tt", pt_tt, "pt_tt/F")
-    oTree.Branch("njets", njets, "njets/F")
-    oTree.Branch("njetspt20", njetspt20, "njetspt20/F")
+    oTree.Branch("njets", njets, "njets/I")
+    oTree.Branch("njetspt20", njetspt20, "njetspt20/I")
+    oTree.Branch("nbtag", nbtag, "nbtag/I")
 
     oTree.Branch("jpt_1", jpt_1, "jpt_1/F")
     oTree.Branch("jeta_1", jeta_1, "jeta_1/F")
@@ -284,7 +285,18 @@ def makeSyncNtuples(iLocation):
     tau2 = lvClass()
     for iEntry in range(nEntries):
         iTree.GetEntry(iEntry)
-
+        if iTree.eleTauPt1.size()>0:
+            print 'eTauPairFound'
+            continue
+        if iTree.muTauPt1.size()>0:
+            print 'muTauPairFound'
+            continue
+        if iTree.jpass_1 == 0:
+            print 'j1Pass Failed'
+            continue
+        if iTree.jpass_2 == 0:
+            print 'j2Pass Failed'
+            continue
         jetsList = [(iTree.J1CSVbtag, iTree.J1Pt, iTree.J1Eta, iTree.J1Phi, iTree.J1Mass),
                     (iTree.J2CSVbtag, iTree.J2Pt, iTree.J2Eta, iTree.J2Phi, iTree.J2Mass),
                     (iTree.J3CSVbtag, iTree.J3Pt, iTree.J3Eta, iTree.J3Phi, iTree.J3Mass),
@@ -297,16 +309,19 @@ def makeSyncNtuples(iLocation):
         b1.SetCoordinates(jetsList[0][1], jetsList[0][2], jetsList[0][3], jetsList[0][4])
         b2.SetCoordinates(jetsList[1][1], jetsList[1][2], jetsList[1][3], jetsList[1][4])
 
-        if jetsList[0][1] < 20 or jetsList[1][1] < 20:
+#         if jetsList[0][1] < 20 or jetsList[1][1] < 20:
+#             continue
+#         if abs(jetsList[0][2]) > 2.4 or abs(jetsList[1][2]) > 2.4:
+#             continue
+        if iTree.iso1.at(0)>1.0 or iTree.iso2.at(0)>1.0:
             continue
-        if abs(jetsList[0][2]) > 2.4 or abs(jetsList[1][2]) > 2.4:
-            continue
+
 
         run[0] = iTree.RUN
         evt[0] = iTree.EVENT
-        npv[0] = iTree.LUMI
-        npu[0] = int(iTree.puBX0)
-        lumi[0] = iTree.vertices
+        npv[0] = iTree.vertices
+        npu[0] = int(iTree.puTruth)
+        lumi[0] = iTree.LUMI
         rho[0] = iTree.Rho
         mvis[0] = (tau1+tau2).mass()
         m_sv[0] = iTree.svMass.at(0)
@@ -348,8 +363,8 @@ def makeSyncNtuples(iLocation):
         againstMuonTight2_2[0] = iTree.againstMuonTight2_2
 
         met[0] = iTree.metUnc
-        mvamet[0] = iTree.met.at(0)
-        mvametphi[0] = iTree.metphi.at(0)
+        mvamet[0] = iTree.metOld
+        mvametphi[0] = iTree.metOldphi
         mvacov00[0] = iTree.mvacov00
         mvacov01[0] = iTree.mvacov01
         mvacov10[0] = iTree.mvacov10
@@ -360,8 +375,9 @@ def makeSyncNtuples(iLocation):
 
         pt_tt[0] = iTree.fullPt
 
-        njets[0] = iTree.njets
-        njetspt20[0] = iTree.njetspt20
+        njets[0] = int(iTree.njets)
+        njetspt20[0] = int(iTree.njetspt20)
+        nbtag[0] = int(iTree.NBTags)
 
         bcsv_1[0] = jetsList[0][0]
         bpt_1[0] = jetsList[0][1]
@@ -376,13 +392,13 @@ def makeSyncNtuples(iLocation):
         beta_3[0] = jetsList[2][2]
         bphi_3[0] = jetsList[2][3]
 
-        jpt_1[0] = iTree.J2Pt
-        jeta_1[0] = iTree.J2Eta
-        jphi_1[0] = iTree.J2Phi
-        jptraw_1[0] = iTree.J2PtUncorr
-        jptunc_1[0] = iTree.J2JECUnc
+        jpt_1[0] = iTree.J1Pt
+        jeta_1[0] = iTree.J1Eta
+        jphi_1[0] = iTree.J1Phi
+        jptraw_1[0] = iTree.J1PtUncorr
+        jptunc_1[0] = iTree.J1JECUnc
         jmva_1[0] = iTree.jmva_1
-        jctm_1[0] = iTree.J2Ntot
+        jctm_1[0] = iTree.J1Ntot
         jpass_1[0] = bool(iTree.jpass_1) 
 
         jpt_2[0] = iTree.J2Pt
@@ -406,4 +422,4 @@ def makeSyncNtuples(iLocation):
     oTree.Write()
     oFile.Close()
 
-makeSyncNtuples('/hdfs/store/user/zmao/H2hh300_sync2-SUB-TT')
+makeSyncNtuples('/hdfs/store/user/zmao/H2hh300_sync_mvaMET-SUB-TT')

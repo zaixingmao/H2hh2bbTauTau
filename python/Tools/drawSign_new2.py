@@ -77,13 +77,16 @@ options = opts()
 option = options.option
 
 def passCut(tree, iso):
+    if tree.pt1.at(0) > 80:
+        return False
+
     if iso == 'tight':
-        if tree.iso2.at(0) < 1.5:
+        if tree.iso1.at(0)<1.5 and tree.iso2.at(0) < 1.5:
             return True
         else:
             return False
     elif iso == 'relaxed':
-        if 1.5 < tree.iso2.at(0) < 4.0:
+        if tree.iso1.at(0) > 1.5 or tree.iso2.at(0) > 1.5:
             return True
         else:
             return False

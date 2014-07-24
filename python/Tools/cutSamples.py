@@ -77,10 +77,10 @@ options = opts()
 def findFullMass(jetsList = [], sv4Vec = ''):
     jetsList = sorted(jetsList, key=itemgetter(0), reverse=True)
     combinedJJ = jetsList[0][1]+jetsList[1][1]
-    if jetsList[1][0] > 0 and jetsList[0][1].pt() > 30 and jetsList[1][1].pt() > 30 and abs(jetsList[0][1].eta()) < 2.4 and abs(jetsList[1][1].eta()) < 2.4:
-        return combinedJJ, jetsList[0][0], jetsList[1][0], jetsList[0][1], jetsList[1][1], (combinedJJ+sv4Vec).mass(), r.Math.VectorUtil.DeltaR(jetsList[0][1], jetsList[1][1]), jetsList[0][2], jetsList[1][2]
-    else:
-        return -1, -1, -1, -1, -1, -1, -1, -1, -1
+#     if jetsList[1][0] > 0 and jetsList[0][1].pt() > 30 and jetsList[1][1].pt() > 30 and abs(jetsList[0][1].eta()) < 2.4 and abs(jetsList[1][1].eta()) < 2.4:
+    return combinedJJ, jetsList[0][0], jetsList[1][0], jetsList[0][1], jetsList[1][1], (combinedJJ+sv4Vec).mass(), r.Math.VectorUtil.DeltaR(jetsList[0][1], jetsList[1][1]), jetsList[0][2], jetsList[1][2]
+#     else:
+#         return -1, -1, -1, -1, -1, -1, -1, -1, -1
 
 def findGenJet(j1Name, jet1, j2Name, jet2, tChain):
     genJet1 = lvClass()
@@ -243,6 +243,8 @@ for iSample, iLocation in sampleLocations:
     pZ_new2 = array('f', [0.])
     pZV_new2 = array('f', [0.])
     triggerEff = array('f', [0.])
+    triggerEff1 = array('f', [0.])
+    triggerEff2 = array('f', [0.])
     metTau1DPhi = array('f', [0.])
     metTau2DPhi = array('f', [0.])
     metJ1DPhi = array('f', [0.])
@@ -321,6 +323,8 @@ for iSample, iLocation in sampleLocations:
     iTree.Branch("pZ_new2", pZ_new2, "pZ_new2/F")
     iTree.Branch("pZV_new2", pZV_new2, "pZV_new2/F")
     iTree.Branch("triggerEff", triggerEff, "triggerEff/F")
+    iTree.Branch("triggerEff1", triggerEff1, "triggerEff1/F")
+    iTree.Branch("triggerEff2", triggerEff2, "triggerEff2/F")
     iTree.Branch("metTau1DPhi", metTau1DPhi, "metTau1DPhi/F")
     iTree.Branch("metTau2DPhi", metTau2DPhi, "metTau2DPhi/F")
     iTree.Branch("metJ1DPhi", metJ1DPhi, "metJ1DPhi/F")
@@ -399,8 +403,8 @@ for iSample, iLocation in sampleLocations:
         sv4Vec.SetCoordinates(iChain.svPt.at(0), iChain.svEta.at(0), iChain.svPhi.at(0), iChain.svMass.at(0))
         bb = lvClass()
         bb, CSVJ1[0], CSVJ2[0], CSVJet1, CSVJet2, fullMass[0], dRJJ[0], j1Name, j2Name = findFullMass(jetsList=jetsList, sv4Vec=sv4Vec) 
-        if bb == -1:
-            continue
+#         if bb == -1:
+#             continue
         matchGenJet1Pt[0] = 0
         matchGenJet2Pt[0] = 0
 
@@ -485,9 +489,13 @@ for iSample, iLocation in sampleLocations:
 
         eff1 = calcTrigOneTauEff(eta=iChain.eta1.at(0), pt=iChain.pt1.at(0), data = True, fitStart=25)
         eff2 = calcTrigOneTauEff(eta=iChain.eta2.at(0), pt=iChain.pt2.at(0), data = True, fitStart=25)
+        triggerEff1[0] = eff1
+        triggerEff2[0] = eff2        
         triggerEff[0] = eff1*eff2
         if isData:
             triggerEff[0] = 1
+            triggerEff1[0] = 1
+            triggerEff2[0] = 1
         iTree.Fill()
         counter += 1
         tool.printProcessStatus(iEntry, nEntries, 'Saving to file %s.root' %(iSample))

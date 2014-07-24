@@ -33,13 +33,29 @@ ran = [10, -4, 4]
 
 yMax = float(options.max)
 
+background = []
+files = []
+trees = []
+inits = []
+stack = r.THStack()
+legendHistos = []
 
-tauPt_hl = r.TH1F('tauPt_hl','', ran[0], ran[1], ran[2])
-tauPt_ll = r.TH1F('tauPt_ll','', ran[0], ran[1], ran[2])
-ZZ = r.TH1F('ZZ','', ran[0], ran[1], ran[2])
+Lumi = 19.7
 
-tauPt = r.TH1F('tauPt','', ran[0], ran[1], ran[2])
-tauPtData = r.TH1F('tauPtData','', ran[0], ran[1], ran[2])
+fileList = [('ZZ', preFix + 'ZZ_eff_all.root', 2500, 5),
+            ('WZJetsTo2L2Q', preFix + 'WZJetsTo2L2Q_eff_all.root', 2207, 5),
+            ('tt_full_lep',preFix + 'tt_eff_all.root', 26197.5, r.kRed-7),
+            ('tt_semi_lep',preFix + 'tt_semi_eff_all.root', 109281, r.kAzure+7),
+                #('DYJetsToLL', 'TMVARegApp_DYJetsToLL_eff_all.root', 3504000, r.kGreen-7),
+            ('DY1JetsToLL', preFix + 'DY1JetsToLL_eff2_all.root', 561000, r.kGreen-7),
+            ('DY2JetsToLL', preFix + 'DY2JetsToLL_eff2_all.root', 181000, r.kGreen-7),
+            ('DY3JetsToLL', preFix + 'DY3JetsToLL_eff2_all.root', 51100, r.kGreen-7),
+            ('W1JetsToLNu', preFix + 'W1JetsToLNu_eff2_all.root', 5400000, r.kMagenta-9),
+            ('W2JetsToLNu', preFix + 'W2JetsToLNu_eff2_all.root', 1750000, r.kMagenta-9),
+            ('W3JetsToLNu', preFix + 'W3JetsToLNu_eff2_all.root', 519000, r.kMagenta-9)]
+
+totalBkg = r.TH1F('totalBkg','', ran[0], ran[1], ran[2])
+data = r.TH1F('data','', ran[0], ran[1], ran[2])
 
 ifile1 = r.TFile('/nfs_scratch/ojalvo/LTau_12_2/TT_HL.root')
 ifile2 = r.TFile('/nfs_scratch/ojalvo/LTau_12_2/TT_LL.root')
@@ -53,83 +69,43 @@ LEPTON = "ET"
 if lepton == "mu":
     LEPTON = "MT"
 
-iTree1 = ifile1.Get("%sTauEventTreeFinal/eventTree" %lepton)
-tmpHist1 = ifile1.Get("%s/results" %LEPTON)
-initTT_hl = tmpHist1.GetBinContent(1)
-iTree2 = ifile2.Get("%sTauEventTreeFinal/eventTree" %lepton)
-tmpHist2 = ifile2.Get("%s/results" %LEPTON)
-initTT_ll = tmpHist2.GetBinContent(1)
-iTree3 = ifile3.Get("%sTauEventTreeFinal/eventTree" %lepton)
-tmpHist3 = ifile3.Get("%s/results" %LEPTON)
-initZZ = tmpHist3.GetBinContent(1)
-
+i = 0
+for iSample, iFile, iXS, iColor in fileList:
+    background.append(r.TH1F(iSample,'', ran[0], ran[1], ran[2]))
+    files.append(r.TFile(iFile))
+    trees.append(files[i].Get("%sTauEventTreeFinal/eventTree" %lepton))
+    inits.append(files[i].Get("%s/results" %LEPTON).GetBinContent(1))
+    total = trees[i].GetEntries()
+    scale = Lumi*iXS/inits[i]
+    for i in range(total):
+        r.gStyle.SetOptStat(0)
+        tool.printProcessStatus(iCurrent=i, total=total, processName = 'Looping sample')
+        trees[i].GetEntry(i)
+        if not passCut(trees[i]):
+            continue
+        background[i].Fill(trees[i].phi2, scale)
+        background[i].SetFillColor(iColor)
+        stack.Add(background[i])
+        legendHistos.append((iSample, background[i]))
+    print ''
+    totalBkg = totalBkg + background[i]
+    i += 1
 
 dataTree = dataFile.Get("%sTauEventTreeFinal/eventTree" %lepton)
-total1 = iTree1.GetEntries()
-total2 = iTree2.GetEntries()
-total3 = iTree3.GetEntries()
 totalData = dataTree.GetEntries()
 
-Lumi = 19.7
-scale_hl = Lumi*109281/initTT_hl
-scale_ll = Lumi*26197.5/initTT_ll
-scale_ZZ = Lumi*2500/initZZ
-
-for i in range(total1):
-    r.gStyle.SetOptStat(0)
-    tool.printProcessStatus(iCurrent=i, total=total1, processName = 'Looping sample')
-    iTree1.GetEntry(i)
-    if not passCut(iTree1):
-        continue
-    tauPt_hl.Fill(iTree1.phi2)
-    tauPt.Fill(iTree1.phi2, scale_hl)
-print ''
-for i in range(total2):
-    r.gStyle.SetOptStat(0)
-    tool.printProcessStatus(iCurrent=i, total=total2, processName = 'Looping sample')
-    iTree2.GetEntry(i)
-    if not passCut(iTree2):
-        continue
-    tauPt_ll.Fill(iTree2.phi2)
-    tauPt.Fill(iTree2.phi2, scale_ll)
-print ''
-print ''
-for i in range(total3):
-    r.gStyle.SetOptStat(0)
-    tool.printProcessStatus(iCurrent=i, total=total3, processName = 'Looping sample')
-    iTree3.GetEntry(i)
-    if not passCut(iTree3):
-        continue
-    ZZ.Fill(iTree3.phi2)
-    tauPt.Fill(iTree3.phi2, scale_ZZ)
-print ''
 for i in range(totalData):
     r.gStyle.SetOptStat(0)
     tool.printProcessStatus(iCurrent=i, total=totalData, processName = 'Looping sample')
     dataTree.GetEntry(i)
     if not passCut(dataTree):
         continue
-    tauPtData.Fill(dataTree.phi2)
+    data.Fill(dataTree.phi2)
 
 legendPosition = (0.5, 0.7, 0.90, 0.88)
 
-legendHistos = [(tauPt_hl,"tt-semi"),
-                (tauPt_ll,"tt-full"),
-                (ZZ,"ZZ-llqq"),
-                (tauPtData,"data")]
-print ''
 
-#scaling
-tauPt_hl.Scale(scale_hl)
-tauPt_ll.Scale(scale_ll)
-ZZ.Scale(scale_ZZ)
-stack = r.THStack()
-tauPt_hl.SetFillColor(r.kAzure+7)
-tauPt_ll.SetFillColor(r.kRed-7)
-ZZ.SetFillColor(r.kYellow)
-stack.Add(ZZ)
-stack.Add(tauPt_hl)
-stack.Add(tauPt_ll)
+print ''
 
 psfile = 'LTauMCValidation_%s.pdf' %lepton
 
@@ -137,18 +113,18 @@ c = r.TCanvas("c","Test", 800, 600)
 stack.SetTitle('MC Validation; tau phi; events / bin')
 stack.SetMaximum(yMax)
 stack.Draw()
-tauPtData.SetMarkerStyle(8)
-tauPtData.SetMarkerSize(0.9)
-tauPtData.Draw('sameE')
+data.SetMarkerStyle(8)
+data.SetMarkerSize(0.9)
+data.Draw('sameE')
 l1 = tool.setMyLegend(lPosition=legendPosition, lHistList=legendHistos)
 l1.Draw("same")
 
 c.Update()
 c.Print('%s(' %psfile)
 c.Clear()
-tauInfo = tauPtData.Clone()
+tauInfo = data.Clone()
 tauInfo.Sumw2()
-tauInfo.Divide(tauPt)
+tauInfo.Divide(totalBkg)
 tauInfo.SetMarkerStyle(8)
 tauInfo.SetMarkerSize(0.9)
 tauInfo.SetMaximum(1.5)

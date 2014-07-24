@@ -25,6 +25,8 @@ def opts():
     parser.add_option("--location", dest="location", default = '.', help="")
     parser.add_option("--bTag", dest="bTag", default = 'True', help="")
     parser.add_option("--predict", dest="predict", default = 'False', help="")
+    parser.add_option("--region", dest="region", default = 'LL', help="")
+
 
     options, args = parser.parse_args()
     return options
@@ -62,10 +64,27 @@ def bTagSelection(tree, bTag):
         passCut = 1
     return passCut
 
-def passCut(tree, bTag):
+def passCut(tree, bTag, region):
     if bTagSelection(tree, bTag) and abs(tree.eta1.at(0))<2.1 and abs(tree.eta2.at(0))<2.1:
         iso_count = 0
         sign_count = 0
+        if varsList.findVar(tree, 'dEtaTauTau') > 1:
+            return 0
+        if region == 'LL':
+            if  tree.iso1.at(0)>1.5  and tree.iso2.at(0)<1.5:
+                  return 0
+            if  tree.iso1.at(0)<1.5  and tree.iso2.at(0)>1.5:
+                  return 0
+        elif region == 'LT':
+            if  tree.iso1.at(0)>1.5  and tree.iso2.at(0)>1.5:
+                return 0
+            if  tree.iso1.at(0)<1.5  and tree.iso2.at(0)>1.5:
+                  return 0
+        elif region == 'TL':
+            if  tree.iso1.at(0)>1.5  and tree.iso2.at(0)>1.5:
+                return 0
+            if  tree.iso1.at(0)>1.5  and tree.iso2.at(0)<1.5:
+                  return 0
         if tree.iso1.at(0) > 1.5 or tree.iso2.at(0) > 1.5:
             iso_count = 1
         if tree.charge1.at(0) -  tree.charge2.at(0) == 0:
@@ -103,19 +122,20 @@ def addFakeTHStack(hist, stack):
             hist.SetBinContent(i+1,currentValue + iHist.GetBinContent(i+1))
     return hist
 
-def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, rangeMin, rangeMax, location, bTag, predict):
+def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, rangeMin, rangeMax, location, bTag, predict, region):
     r.gStyle.SetOptStat(0)
-    preFix = 'TMVAClassApp_TMVARegApp_'
+    preFix = 'ClassApp_both_ClassApp_QCD_ClassApp_EWK_TMVARegApp_'
 
-    fileList = [('ZZ', preFix + 'ZZ_eff_all.root', 2500, 5),
-                ('tt_full_lep',preFix+'tt_eff_all.root', 26197.5, r.kRed-7),
-                ('tt_semi_lep',preFix+'tt_semi_eff_all.root', 109281, r.kAzure+7),
+    fileList = [# ('ZZ', preFix + 'ZZ_eff_all.root', 2500, 5),
+#                 ('tt_full_lep',preFix+'tt_eff_all.root', 26197.5, r.kRed-7),
+#                 ('tt_semi_lep',preFix+'tt_semi_eff_all.root', 109281, r.kAzure+7),
 #                 ('DYJetsToLL', 'DYJetsToLL_eff_all.root', 3504000, r.kGreen-7),
-                ('DY2JetsToLL', preFix+'DY2JetsToLL_eff_all.root', 181000, r.kGreen-7),
-                ('DY3JetsToLL', preFix+'DY3JetsToLL_eff_all.root', 51100, r.kGreen-7),
-                ('W1JetsToLNu', preFix+'W1JetsToLNu_eff_all.root', 5400000, r.kMagenta-9),
-                ('W2JetsToLNu', preFix+'W2JetsToLNu_eff_all.root', 1750000, r.kMagenta-9),
-                ('W3JetsToLNu', preFix+'W3JetsToLNu_eff_all.root', 519000, r.kMagenta-9)]
+#                 ('DY2JetsToLL', preFix+'DY2JetsToLL_eff_all.root', 181000, r.kGreen-7),
+#                 ('DY3JetsToLL', preFix+'DY3JetsToLL_eff_all.root', 51100, r.kGreen-7),
+#                 ('W1JetsToLNu', preFix+'W1JetsToLNu_eff_all.root', 5400000, r.kMagenta-9),
+#                 ('W2JetsToLNu', preFix+'W2JetsToLNu_eff_all.root', 1750000, r.kMagenta-9),
+#                 ('W3JetsToLNu', preFix+'W3JetsToLNu_eff_all.root', 519000, r.kMagenta-9)
+                ('QCD', preFix+'QCD_Pt-50to80_all.root', 519000, r.kOrange-4)]
     histList = []
     QCDHistList = []
     varRange = [nbins, rangeMin, rangeMax]
@@ -136,7 +156,8 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
     print 'Adding events from: %s ...' %dataName
     for iEntry in range(treeData.GetEntries()):
         treeData.GetEntry(iEntry)
-        select = passCut(treeData, bTag)
+        select = passCut(treeData, bTag, region)
+        continue
         if (select == 0) or (select == 1):
             continue
         var_data[select-2].Fill(varsList.findVar(treeData, varName))
@@ -155,16 +176,16 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
         tmpTree.append(tmpFile[i].Get('eventTree'))
         for iEntry in range(tmpTree[i].GetEntries()):
             tmpTree[i].GetEntry(iEntry)
-            select = passCut(tmpTree[i], bTag)
+            select = passCut(tmpTree[i], bTag, region)
             if not select:
                 continue
-            histList[4*i+select-1].Fill(varsList.findVar(tmpTree[i], varName), tmpTree[i].triggerEff)
+            histList[4*i+select-1].Fill(varsList.findVar(tmpTree[i], varName), 1)#tmpTree[i].triggerEff)
     
         initNEventsList.append(tmpFile[i].Get('preselection'))
         for j in range(4):
             var_background.append(r.THStack())
-            histList[4*i+j].SetFillColor(fileList[i][3])
-            histList[4*i+j].Scale(fileList[i][2]*Lumi/initNEventsList[i].GetBinContent(1))
+#             histList[4*i+j].SetFillColor(fileList[i][3])
+#             histList[4*i+j].Scale(fileList[i][2]*Lumi/initNEventsList[i].GetBinContent(1))
             var_background[j].Add(histList[4*i+j])
             legendHistos[j].append((histList[4*i+j], '%s (%.2f)' %(fileList[i][0], histList[4*i+j].Integral())))
 
@@ -210,7 +231,7 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
             print 'Adding events from: %s ...' %(signalDict[signalSelection][0])
             for iEntry in range(treeSignal.GetEntries()):
                 treeSignal.GetEntry(iEntry)
-                select = passCut(treeSignal, bTag)
+                select = passCut(treeSignal, bTag, region)
                 if not select:
                     continue
                 var_signal[select-1].Fill(varsList.findVar(treeSignal, varName), treeSignal.triggerEff)
@@ -280,58 +301,78 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
         titleName = 'Revert b-tag'
         fileName = 'revert_bTag'
 
-    psfile = '%s/%s_%s.pdf' %(location, varName, fileName)
+    psfile = '%s/%s_%s_all.pdf' %(location, varName, fileName)
     c = r.TCanvas("c","Test", 800, 600)
-    #ps = r.TPDF(psfile,112)
-    c.Divide(2,2)
-    drawOpt = ''
-    for k in range(4):
-        c.cd(k+1)
-        if logY == 'True':
-            r.gPad.SetLogy()
-        signSelection, iso = conditions(k+1)
-        var_background[k].SetTitle('%s %s Events %s (%.1f fb^{-1}); %s; events / bin' %(signSelection, iso, titleName, Lumi,varName))
-        var_background[k].SetMaximum(max)
-        var_background[k].SetMinimum(0.01)
-        var_background[k].Draw()
-        if k == 0 and useData == 'True' and predict == 'True':
-            ost_fromSameSign.Draw('same')
-            ost_fromRelaxed.Draw('same')
+#     if varName == 'BDT_both':
+#         r.gPad.SetLogy()
+    histList[2].SetTitle('Relaxed Events dEtaTauTau < 1 %s ; %s; events / bin' %(titleName,varName))
+#     histList[2].SetMaximum(100)
+    histList[2].SetMinimum(0)
+    histList[2].SetLineColor(r.kRed)
+    histList[2].SetLineWidth(2)
+    histList[3].SetLineWidth(2)
+    histList[2].Draw()
+    histList[3].Draw('same')
+    histList[3].SetLineColor(r.kBlue)
+    histList[3].SetLineStyle(2)
+    var_signal[0].SetLineColor(r.kBlack)
+    var_signal[0].SetLineStyle(2)
+    var_signal[0].Draw('same')
 
-        if k != 0 and useData == 'True':
-            var_data[k-1].Draw('PE same')
-        legendPosition = (0.63, 0.93 - 0.035*len(legendHistos[k]), 0.93, 0.9)
-        l.append(tool.setMyLegend(lPosition=legendPosition, lHistList=legendHistos[k]))
-        l[k].Draw('same')
-        var_signal[k].Draw('same')
+    l1 = tool.setMyLegend(lPosition=(0.5,0.7,0.93,0.8), lHistList=[(histList[2], 'OS QCD (%.2f)' %histList[2].Integral()),
+                                                                   (histList[3], 'SS QCD (%.2f)' %histList[3].Integral())])
+    l1.Draw('same')
+
+    #ps = r.TPDF(psfile,112)
+#     c.Divide(2,2)
+#     drawOpt = ''
+#     for k in range(4):
+#         c.cd(k+1)
+#         if logY == 'True':
+#             r.gPad.SetLogy()
+#         signSelection, iso = conditions(k+1)
+#         var_background[k].SetTitle('%s %s Events %s (%.1f fb^{-1}); %s; events / bin' %(signSelection, iso, titleName, Lumi,varName))
+#         var_background[k].SetMaximum(max)
+#         var_background[k].SetMinimum(0.01)
+#         var_background[k].Draw()
+#         if k == 0 and useData == 'True' and predict == 'True':
+#             ost_fromSameSign.Draw('same')
+#             ost_fromRelaxed.Draw('same')
+# 
+#         if k != 0 and useData == 'True':
+#             var_data[k-1].Draw('PE same')
+#         legendPosition = (0.63, 0.93 - 0.035*len(legendHistos[k]), 0.93, 0.9)
+#         l.append(tool.setMyLegend(lPosition=legendPosition, lHistList=legendHistos[k]))
+#         l[k].Draw('same')
+#         var_signal[k].Draw('same')
+#     c.Update()
+#     c.Print('%s(' %psfile)
+#     if predict == 'True':
+#         c.cd(1)
+#         l1 = tool.setMyLegend(lPosition=(0.5,0.7,0.93,0.9), lHistList=[(sameS2OppositeS, 'from SS/Relaxed (%.2f)' %sameS2OppositeS.Integral()),
+#                                                                    (os_relaxed, 'Data - MC x%.2f (%.2f)' %(scale_mc2, os_relaxed.Integral()))])
+#         sameS2OppositeS.Draw()
+#         sameS2OppositeS.SetTitle('QCD background in OS Relaxed Region %s (%.1f fb^{-1}); %s; events / bin' %(titleName,Lumi,varName))
+#         os_relaxed.SetLineWidth(2)
+#         os_relaxed.SetLineStyle(2)
+#         os_relaxed.Draw('same')
+#         l1.Draw('same')
+#         c.cd(2)
+#         l2 = tool.setMyLegend(lPosition=(0.5,0.7,0.93,0.9), lHistList=[(relaxed2Tight, 'from SS/Relaxed (%.2f)' %relaxed2Tight.Integral()),
+#                                                                    (ss_tight, 'Data - MC x%.2f (%.2f)' %(scale_mc, ss_tight.Integral()))])
+#         relaxed2Tight.SetTitle('QCD background in SS Tight Region %s (%.1f fb^{-1}); %s; events / bin' %(titleName,Lumi,varName))
+#         relaxed2Tight.Draw()
+#         ss_tight.SetLineWidth(2)
+#         ss_tight.SetLineStyle(2)
+#         ss_tight.Draw('same')
+#         l2.Draw('same')
     c.Update()
-    c.Print('%s(' %psfile)
-    if predict == 'True':
-        c.cd(1)
-        l1 = tool.setMyLegend(lPosition=(0.5,0.7,0.93,0.9), lHistList=[(sameS2OppositeS, 'from SS/Relaxed (%.2f)' %sameS2OppositeS.Integral()),
-                                                                   (os_relaxed, 'Data - MC x%.2f (%.2f)' %(scale_mc2, os_relaxed.Integral()))])
-        sameS2OppositeS.Draw()
-        sameS2OppositeS.SetTitle('QCD background in OS Relaxed Region %s (%.1f fb^{-1}); %s; events / bin' %(titleName,Lumi,varName))
-        os_relaxed.SetLineWidth(2)
-        os_relaxed.SetLineStyle(2)
-        os_relaxed.Draw('same')
-        l1.Draw('same')
-        c.cd(2)
-        l2 = tool.setMyLegend(lPosition=(0.5,0.7,0.93,0.9), lHistList=[(relaxed2Tight, 'from SS/Relaxed (%.2f)' %relaxed2Tight.Integral()),
-                                                                   (ss_tight, 'Data - MC x%.2f (%.2f)' %(scale_mc, ss_tight.Integral()))])
-        relaxed2Tight.SetTitle('QCD background in SS Tight Region %s (%.1f fb^{-1}); %s; events / bin' %(titleName,Lumi,varName))
-        relaxed2Tight.Draw()
-        ss_tight.SetLineWidth(2)
-        ss_tight.SetLineStyle(2)
-        ss_tight.Draw('same')
-        l2.Draw('same')
-        c.Update()
-    c.Print('%s)' %psfile)
+    c.Print('%s' %psfile)
     #ps.Close()
     print "Plot saved at %s" %(psfile)
 
 op = opts()
 if op.varName != 'test':
     getHistos(op.varName, op.signal, op.logy, float(op.sigBoost), int(op.nbins),
-           op.useData, float(op.max), float(op.rangeMin), float(op.rangeMax), op.location, op.bTag, op.predict)
+           op.useData, float(op.max), float(op.rangeMin), float(op.rangeMax), op.location, op.bTag, op.predict, op.region)
 
