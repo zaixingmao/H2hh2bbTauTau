@@ -78,8 +78,8 @@ def passCut(tree, bTag, region):
 #         return 0
 #     if tree.pt1.size() > 1:
 #         return 0
-    isoCut = 3
-    iso_count = 3
+    isoCut = 6
+    iso_count = 1.5
 
     if region == 'LL':
         if  tree.iso1.at(0)>1.5  and tree.iso2.at(0)>1.5:
@@ -106,15 +106,23 @@ def passCut(tree, bTag, region):
     if bTagSelection(tree, bTag) and abs(tree.eta1.at(0))<2.1 and abs(tree.eta2.at(0))<2.1:
         sign_count = 0
         maxIso = 10
-        if  tree.iso1.at(0)>isoCut and tree.iso2.at(0)>isoCut:
+        if  tree.iso1.at(0) > maxIso  or tree.iso2.at(0) > maxIso:
+            iso_count = 5
+#         elif  tree.iso1.at(0)>isoCut and tree.iso2.at(0)>isoCut:
+#             iso_count = 1
+
+        elif  1.5<tree.iso1.at(0)<3 and 3<tree.iso2.at(0):
             iso_count = 1
+        elif  1.5<tree.iso2.at(0)<3 and 3<tree.iso1.at(0):
+            iso_count = 1
+
         elif (tree.iso1.at(0)>isoCut and tree.iso2.at(0)<1.5) or (tree.iso2.at(0)>isoCut and tree.iso1.at(0)<1.5):
             iso_count = 1
-        elif  tree.iso1.at(0) > maxIso  or tree.iso2.at(0) > maxIso:
-            iso_count = 3
         elif  tree.iso1.at(0)<1.5  and tree.iso2.at(0)<1.5:
             iso_count = 0
-        if tree.charge1.at(0) -  tree.charge2.at(0) == 0:
+        else:
+            return 0
+        if tree.charge1.at(0) - tree.charge2.at(0) == 0:
             sign_count = 1
 
         return (iso_count<<1) + sign_count + 1
@@ -129,7 +137,7 @@ def findBin(x, nBins, xMin, xMax):
         return bin
 
 def findPtScale(pt1, pt2, direction, region):
-    scaleDictUp = {'LL': 0.049, #0.036, 
+    scaleDictUp = {'LL': 0.051, #0.036, 
                    'LT': 0.248, #0.221,
                    'TL': 0.229, #0.201
                   }  
@@ -170,11 +178,14 @@ def calc(alpha, nT,nL):
     return pow(nT-alpha*nL,2)/(alpha*nL)
 
 def drawX2vsAlpha(hist1, hist2, nbins, xmin, xmax):
-    plotHist = r.TGraph() #r.TH1F('plotHist', '', nbins, xmin, xmax)
+    plotHist = r.TGraph() 
+    hist = r.TH1F('plotHist', '', nbins, xmin, xmax)
     incre = (xmax - xmin)/nbins
     nHistBins = hist1.GetNbinsX()
     iAlpha = xmin
     counter = 0
+    min = 1000
+    minX = 0
     while iAlpha < xmax:
         xSquare = 0
         for iBin in range(nHistBins):
@@ -182,9 +193,13 @@ def drawX2vsAlpha(hist1, hist2, nbins, xmin, xmax):
             nL = hist2.GetBinContent(iBin+1)
             xSquare += calc(iAlpha, nT,nL)
         iAlpha += incre
-        plotHist.SetPoint(counter, iAlpha, xSquare) #Fill(iAlpha, xSquare)
+        if xSquare < min:
+            min = xSquare
+            minX = iAlpha
+        plotHist.SetPoint(counter, iAlpha, xSquare) 
+        hist.Fill(iAlpha, xSquare)
         counter += 1
-    return plotHist
+    return plotHist, hist, min, minX
 
 def findUnevenRange(xmin, nbins, hist):
     xBins = []
@@ -209,6 +224,23 @@ def findBinScale(value, binsArray):
         if value < binsArray[iCounter]:
             return 1/(binsArray[iCounter]-binsArray[iCounter-1])
     return 0
+
+def findRange(hist, yValue, xMiddle):
+    nbins = hist.GetNbinsX()
+    x1 = 0
+    x2 = 0
+    deltaY1 = 1000
+    deltaY2 = 1000
+    for i in range(nbins):
+        if hist.GetBinCenter(i+1) < xMiddle:
+            if deltaY1 > abs(hist.GetBinContent(i+1) - yValue):
+                deltaY1 = abs(hist.GetBinContent(i+1) - yValue)
+                x1 = hist.GetBinCenter(i+1)
+        else:
+            if deltaY2 > abs(hist.GetBinContent(i+1) - yValue):
+                deltaY2 = abs(hist.GetBinContent(i+1) - yValue)
+                x2 = hist.GetBinCenter(i+1)
+    return x1, x2
 
 def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, rangeMin, rangeMax, location, bTag, predict, predictPtBin, region, unit):
     r.gStyle.SetOptStat(0)
@@ -293,7 +325,7 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
         var_data[j].SetMarkerStyle(8)
         var_data[j].SetMarkerSize(0.9)
         legendHistos.append([])
-        legendHistos[j+1].append((var_data[j], 'observed (%.0f)' %var_data[j].Integral()))
+        legendHistos[j+1].append((var_data[j], 'observed (%.0f)' %var_data[j].Integral("width")))
 
     for i in range(len(fileList)): 
         for j in range(6):
@@ -325,7 +357,7 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
             histList_4QCD[6*i+j].Scale(fileList[i][2]*Lumi/initNEventsList[i].GetBinContent(1))
                 
             var_background[j].Add(histList[6*i+j])
-            legendHistos[j].append((histList[6*i+j], '%s (%.2f)' %(fileList[i][0], histList[6*i+j].Integral())))
+            legendHistos[j].append((histList[6*i+j], '%s (%.2f)' %(fileList[i][0], histList[6*i+j].Integral("width"))))
 
     data_i = []
     MC_i = []
@@ -414,9 +446,9 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
                 var_signal[i].SetLineWidth(4)
                 var_signal[i].Scale(signalDict[signalSelection][1]*sigBoost*Lumi/initNEventsSignal.GetBinContent(1))
                 if sigBoost != 1:
-                    legendHistos[i].append((var_signal[i], '%sx%0.f (%.2f)' %(signalSelection, sigBoost, var_signal[i].Integral())))
+                    legendHistos[i].append((var_signal[i], '%sx%0.f (%.2f)' %(signalSelection, sigBoost, var_signal[i].Integral("width"))))
                 else:
-                    legendHistos[i].append((var_signal[i], '%s (%.2f)' %(signalSelection, var_signal[i].Integral())))
+                    legendHistos[i].append((var_signal[i], '%s (%.2f)' %(signalSelection, var_signal[i].Integral("width"))))
             DrawSignal = True
         else:
             print '%s not supported, please use H260, H300 or H350' %signalSelection
@@ -441,13 +473,13 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
         QCDHistList_withScale[1].SetLineColor(r.kOrange-4)
         QCDHistList_withScale[1].SetLineWidth(2)
 
-        legendHistos[0].append((QCDHistList_withScale[0], 'From SS/Tight (%.0f)' %QCDHistList_withScale[0].Integral()))
-        legendHistos[0].append((QCDHistList_withScale[1], 'From OS/Relax (%.0f)' %QCDHistList_withScale[1].Integral()))
+        legendHistos[0].append((QCDHistList_withScale[0], 'From SS/Tight (%.0f)' %QCDHistList_withScale[0].Integral("width")))
+        legendHistos[0].append((QCDHistList_withScale[1], 'From OS/Relax (%.0f)' %QCDHistList_withScale[1].Integral("width")))
 
         var_background[1].Add(QCDHistList_withScale[3])
         var_background[2].Add(QCDHistList_withScale[2])
-        legendHistos[1].append((QCDHistList_withScale[3], 'From SS/Relax (%.0f)' %QCDHistList_withScale[3].Integral()))
-        legendHistos[2].append((QCDHistList_withScale[2], 'From SS/Relax (%.0f)' %QCDHistList_withScale[2].Integral()))
+        legendHistos[1].append((QCDHistList_withScale[3], 'From SS/Relax (%.0f)' %QCDHistList_withScale[3].Integral("width")))
+        legendHistos[2].append((QCDHistList_withScale[2], 'From SS/Relax (%.0f)' %QCDHistList_withScale[2].Integral("width")))
         QCDHistList_withScale[1] = tool.addFakeTHStack(QCDHistList_withScale[1],var_background[0])
         QCDHistList_withScale[0] = tool.addFakeTHStack(QCDHistList_withScale[0],var_background[0])
 
@@ -501,7 +533,7 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
     QCDDiff.SetMarkerStyle(8)
     QCDDiff.SetMarkerSize(0.9)
     QCDDiff.SetMaximum(4)
-    QCDDiff.SetMinimum(0)
+    QCDDiff.SetMinimum(0.01)
     QCDDiff.Draw('PE')
 
     fit1.Draw('same')
@@ -525,8 +557,8 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
     QCDDiff2.SetTitle('tight/relaxed MultiJet SS Events %s (%.1f fb^{-1}); %s; tight/relaxed' %(titleName, Lumi,varName))
     QCDDiff2.SetMarkerStyle(8)
     QCDDiff2.SetMarkerSize(0.9)
-    QCDDiff2.SetMinimum(3)
-    QCDDiff2.SetMaximum(0)
+    QCDDiff2.SetMinimum(0.1)
+    QCDDiff2.SetMaximum(3)
     QCDDiff2.Draw('PE')
     fit2.Draw('same')
     lFit2 = tool.setMyLegend((0.15, 0.7, 0.9, 0.85),[(fit2,'Scale between relaxed/tight in SS region: %.3f \pm %.3f' %(fit2.GetParameter(0), fit2.GetParError(0)))])
@@ -534,11 +566,23 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
     c.Print('%s' %psfile)
     #ps.Close()
     c.Clear()
-
-    plotHist = drawX2vsAlpha(QCDHistList[0],QCDHistList[2], 100, 0.03, 0.07)
+    c.SetGrid()
+    XSRange = [0.02, 0.5]
+    line = r.TF1('line', '[0]', XSRange[0], XSRange[1])
+    plotHist, histNew, min, xMin = drawX2vsAlpha(QCDHistList[0],QCDHistList[2], 100, XSRange[0], XSRange[1])
+    line.SetParameter(0, min+1)
     plotHist.SetTitle('Chi Square Test; #alpha; #chi^{2}')
-
     plotHist.Draw('APL')
+    plotHist.GetYaxis().SetNdivisions(520)
+    point = tool.setMyLegend((0.15, 0.8, 0.9, 0.85),[(var_signal[0],'Minimum %.2f at %.3f' %(min, xMin))])
+    point.Draw('same')
+    line.SetLineColor(r.kRed)
+    line.SetLineStyle(2)
+    line.Draw('same')
+    x1, x2 = findRange(histNew, min+1, xMin)
+#     line2 = tool.setMyLegend((0.3, 0.3, 0.8, 0.36),[(line, "#chi^{2} = %.2f, #alpha = [%.3f ~ %.3f] or [%.0f%%, %.0f%%]" %(min+1, x1, x2, 100*(xMin-x1)/xMin, 100*(x2-xMin)/xMin))])
+#     line2.Draw('same')
+
     c.Print('%s)' %psfile)
     print "Plot saved at %s" %(psfile)
 

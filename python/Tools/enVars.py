@@ -42,7 +42,7 @@ sampleLocations = [
 #                     ('dataC', '/hdfs/store/user/zmao/TauParked_Run2012C_relaxed8-SUB-TT-data/'),
 #                     ('dataD', '/hdfs/store/user/zmao/TauParked_Run2012D_relaxed8-SUB-TT-data/'),
 #                     ('dataTotal', '/scratch/zmao/relaxed_regression3/data' ),
-                    ('QCDtotal', '/scratch/zmao/QCD/qcd' ),
+#                     ('QCDtotal', '/scratch/zmao/QCD/qcd' ),
 #                     ('QCDtotal_bEnriched', '/scratch/zmao/QCD/bEnriched' ),
 #                     ('DYJetsToLL_eff', '/hdfs/store/user/zmao/DYJetsToLL_relaxed8-SUB-TT'),
 #                     ('DY1JetsToLL_eff2', '/hdfs/store/user/zmao/DY1JetsToLL_relaxed9-SUB-TT'),
@@ -52,6 +52,8 @@ sampleLocations = [
 #                     ('W2JetsToLNu_eff2', '/hdfs/store/user/zmao/W2JetsToLNu_relaxed9-SUB-TT'),
 #                     ('W3JetsToLNu_eff2', '/hdfs/store/user/zmao/W3JetsToLNu_relaxed9-SUB-TT'),
 #                     ('WZJetsTo2L2Q_eff', '/hdfs/store/user/zmao/WZJetsTo2L2Q_relaxed8-SUB-TT'),
+                    ('H2hh300_Sync', '/hdfs/store/user/zmao/H2hh300_pt20-SUB-TT'),
+
                   ]
 
 

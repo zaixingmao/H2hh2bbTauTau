@@ -77,7 +77,7 @@ def passCut(tree, option):
     passSign = 0
     if 'tight' in option and (tree.iso1.at(0) < 1.5 and tree.iso2.at(0) < 1.5):
             passIso = 1
-    if 'relaxed' in option and (tree.iso1.at(0) > 1.5 or tree.iso2.at(0) > 1.5):
+    if 'relaxed' in option and (tree.iso1.at(0) > 3 and tree.iso2.at(0) > 3):
             passIso = 1
     if 'SS' in option and (tree.charge1.at(0) == tree.charge2.at(0)):
             passSign = 1
@@ -105,7 +105,9 @@ def findMatch(iTree, isData):
 
     return genMatch
 
-preFix = '/scratch/zmao/relaxed_regression3/ClassApp_both_ClassApp_QCD_ClassApp_EWK_TMVARegApp_'
+massPoint = "350"
+
+preFix = '/scratch/zmao/relaxed_regression3/%s/ClassApp_both_TMVARegApp_' %massPoint
 
 fileList = [('H2hh260', preFix + 'H2hh260_all.root', 'OStightbTag', 14.76),
             ("H2hh300", preFix + "H2hh300_all.root", 'OStightbTag', 15.9), 
@@ -120,10 +122,10 @@ fileList = [('H2hh260', preFix + 'H2hh260_all.root', 'OStightbTag', 14.76),
             ('W1JetsToLNu', preFix + 'W1JetsToLNu_eff2_all.root', 'OStightbTag', 5400000),
             ('W2JetsToLNu', preFix + 'W2JetsToLNu_eff2_all.root', 'OStightbTag', 1750000),
             ('W3JetsToLNu', preFix + 'W3JetsToLNu_eff2_all.root', 'OStightbTag', 519000),
-            ('dataSSRelax', preFix + 'dataTotal_all.root', 'SSrelaxedbTag', 1.1*0.025),
+            ('dataOSRelax', preFix + 'dataTotal_all.root', 'OSrelaxedbTag', 0.05),
             ]
 
-oFileName = 'combined.root'
+oFileName = 'combined_%s.root' %massPoint
 oFile = r.TFile(oFileName, 'RECREATE')
 oTree = r.TTree('eventTree', '')
 
@@ -140,8 +142,8 @@ finalEventsWithXS = r.TH1F('finalEventsWithXS', '', len(fileList), 0, len(fileLi
 
 
 oTree.Branch("BDT", BDT, "BDT/F")
-oTree.Branch("BDT_QCD", BDT_QCD, "BDT_QCD/F")
-oTree.Branch("BDT_EWK", BDT_EWK, "BDT_EWK/F")
+# oTree.Branch("BDT_QCD", BDT_QCD, "BDT_QCD/F")
+# oTree.Branch("BDT_EWK", BDT_EWK, "BDT_EWK/F")
 
 oTree.Branch("triggerEff", triggerEff, "triggerEff/F")
 
@@ -156,7 +158,7 @@ for name, ifile, option, xsValue in fileList:
     tmpHist = iFile.Get('preselection')
     initEvents.Fill(name, tmpHist.GetBinContent(1))
     isData = False
-    if name == 'dataSSRelax':
+    if 'data' in name:
         isData = True
     eventsSaved = 0.
     for i in range(0, total):
@@ -165,8 +167,8 @@ for name, ifile, option, xsValue in fileList:
         if not passCut(iTree, option):
             continue
         BDT[0] = iTree.BDT_both
-        BDT_QCD[0] = iTree.BDT_QCD
-        BDT_EWK[0] = iTree.BDT_EWK
+#         BDT_QCD[0] = iTree.BDT_QCD
+#         BDT_EWK[0] = iTree.BDT_EWK
         triggerEff[0] = iTree.triggerEff
         sampleName[:21] = name
         genMatchName[:3] = findMatch(iTree, isData)

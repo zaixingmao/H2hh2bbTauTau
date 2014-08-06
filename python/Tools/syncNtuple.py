@@ -76,7 +76,9 @@ def makeSyncNtuples(iLocation):
     print nEntries
     iTree.SetBranchStatus("*",1)
 
-    oFile = r.TFile("HTT_mvaMET.root" ,"recreate")
+    oFileName = iLocation[iLocation.rfind("/")+1:iLocation.find("-SUB-TT")]
+
+    oFile = r.TFile("%s.root" %oFileName,"recreate")
     oTree = r.TTree('TauCheck', 'TauCheck')
 
     run  = array('i', [0])
@@ -292,10 +294,10 @@ def makeSyncNtuples(iLocation):
             print 'muTauPairFound'
             continue
         if iTree.jpass_1 == 0:
-            print 'j1Pass Failed'
+#             print 'j1Pass Failed'
             continue
         if iTree.jpass_2 == 0:
-            print 'j2Pass Failed'
+#             print 'j2Pass Failed'
             continue
         jetsList = [(iTree.J1CSVbtag, iTree.J1Pt, iTree.J1Eta, iTree.J1Phi, iTree.J1Mass),
                     (iTree.J2CSVbtag, iTree.J2Pt, iTree.J2Eta, iTree.J2Phi, iTree.J2Mass),
@@ -421,5 +423,7 @@ def makeSyncNtuples(iLocation):
     oFile.cd()
     oTree.Write()
     oFile.Close()
+    print 'Saved file: %s.root' %oFileName
 
-makeSyncNtuples('/hdfs/store/user/zmao/H2hh300_sync_mvaMET-SUB-TT')
+# makeSyncNtuples('/hdfs/store/user/zmao/H2hh300_NoType1-SUB-TT')
+makeSyncNtuples('/hdfs/store/user/zmao/H2hh300_NoMETSmearing-SUB-TT')

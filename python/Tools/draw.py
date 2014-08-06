@@ -10,9 +10,11 @@ region = 'LL'
 
 for varName, varConfig in varsList.varsRange.items():
 #    output = 'python  ~/myScripts/H2hh2bbTauTau/python/Tools/compareIso.py --location /scratch/zmao/relaxed_regression2/plots  --signal H350'
-#     output = 'python  ~/myScripts/H2hh2bbTauTau/python/Tools/drawVarsData_Xsquare.py --location /scratch/zmao/relaxed_regression3/XS_%s_fix  --signal H350' %region
+#     output = 'python  ~/myScripts/H2hh2bbTauTau/python/Tools/drawVarsData_Xsquare.py --location /scratch/zmao/relaxed_regression3/xs_6_10_%s  --signal H350' %region
 #     output = 'python  ~/myScripts/H2hh2bbTauTau/python/Tools/drawVarsData_KS.py --location /scratch/zmao/relaxed_regression3/new2_%s  --signal H350' %region
-    output = 'python  ~/myScripts/H2hh2bbTauTau/python/Tools/drawVarsData_KS_CheckFlat.py --location /scratch/zmao/relaxed_regression3/new2_%s  --signal H350' %region
+#     output = 'python  ~/myScripts/H2hh2bbTauTau/python/Tools/drawVarsData_KS_CheckFlat.py --location /scratch/zmao/relaxed_regression3/KS_1.5_10_%s  --signal H350' %region
+    output = 'python  ~/myScripts/H2hh2bbTauTau/python/Tools/drawVarsData_SSTight.py --location /scratch/zmao/relaxed_regression3/SSTight  --signal H350'
+#     output = 'python  ~/myScripts/H2hh2bbTauTau/python/Tools/drawVarsData_OSRelaxed.py --location /scratch/zmao/relaxed_regression3/SSTight  --signal H350'
 
 #     output = 'python  ~/myScripts/H2hh2bbTauTau/python/Tools/drawVarsData_new2.py --location /scratch/zmao/relaxed_regression3/test_qcd  --signal H350'
 
