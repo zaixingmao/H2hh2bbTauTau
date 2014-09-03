@@ -87,8 +87,8 @@ def passCut(tree, bTag, region):
             return 2
         if tree.iso1.at(0) < 1.5 and tree.iso2.at(0) < 1.5:
             return 1
-
-        if (1.5<tree.iso1.at(0)<3 and 3<tree.iso2.at(0)) or (1.5<tree.iso2.at(0)<3 and 3<tree.iso1.at(0)):
+#         if (1.5<tree.iso1.at(0)<3 and 3<tree.iso2.at(0)) or (1.5<tree.iso2.at(0)<3 and 3<tree.iso1.at(0)):
+        if 3 < tree.iso1.at(0) < 10 and 3 < tree.iso2.at(0) < 10:
             return 5
 
         else:
@@ -104,7 +104,7 @@ def findBin(x, nBins, xMin, xMax):
         return bin
 
 def findPtScale(select):
-    scales = [1, 1.690, 0.352, 0.140, 0.154]
+    scales = [1, 1.741, 0.316, 0.132, 0.049] #[1, 1.690, 0.352, 0.140, 0.051]
     return scales[select-1]
 
 
@@ -165,6 +165,9 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
         if (select == 0):
             continue
         var_data[select-1].Fill(varsList.findVar(treeData, varName))
+        if select == 3 or select == 4:
+            var_data[4].Fill(varsList.findVar(treeData, varName))
+        
 
     legendHistos.append([])
     for j in range(nPlots):
@@ -185,6 +188,8 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
             if (select == 0):
                 continue
             histList[nPlots*i+select-1].Fill(varsList.findVar(tmpTree[i], varName)*scaleMCPt, tmpTree[i].triggerEff)
+            if select == 3 or select == 4:
+                histList[nPlots*i+4].Fill(varsList.findVar(tmpTree[i], varName)*scaleMCPt, tmpTree[i].triggerEff)
 
         initNEventsList.append(tmpFile[i].Get('preselection'))
         for j in range(nPlots):
@@ -202,6 +207,7 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
     e = []
     MC_List = []
     QCDDiff = []
+    inteInSSTight = 0
     for i in range(nPlots):
         QCDHistList.append(r.TH1F('QCD_%i' %(i),"", varRange[0], varRange[1], varRange[2]))
         MC_List.append(r.TH1F('MC_total_%i' %(i),"", varRange[0], varRange[1], varRange[2]))
@@ -218,8 +224,12 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
             if dataValue - MCValue > 0:
                 QCDHistList[i].SetBinContent(j+1, dataValue - MCValue)
                 QCDHistList_withScale[i].SetBinContent(j+1, dataValue - MCValue)
+        if i == 0:
+            inteInSSTight = QCDHistList_withScale[i].Integral()
         QCDHistList_withScale[i].Sumw2()
-        QCDHistList_withScale[i].Scale(findPtScale(i+1))
+        print inteInSSTight
+        tmpIntegral = QCDHistList_withScale[i].Integral()
+        QCDHistList_withScale[i].Scale(inteInSSTight/tmpIntegral)#findPtScale(i+1))
         MC_List[i].Sumw2()
         QCDHistList_withScale[i].SetLineStyle(2)
         QCDDiff.append(r.TH1F('QCDDiff_%i'%i,"", varRange[0], varRange[1], varRange[2]))
@@ -248,6 +258,9 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
                 if (not select) or (select > 4):
                     continue
                 var_signal[select-1].Fill(varsList.findVar(treeSignal, varName), treeSignal.triggerEff)
+                if select == 3 or select == 4:
+                    var_signal[4].Fill(varsList.findVar(treeSignal, varName), treeSignal.triggerEff)
+                    
             initNEventsSignal = fSignal.Get('preselection')
             for i in range(nPlots):
                 var_signal[i].SetLineStyle(7)
@@ -267,11 +280,14 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
         QCDHistList_withScale[1].SetLineColor(r.kRed)
         QCDHistList_withScale[4].SetLineColor(r.kBlue-2)
 
+        legendHistos1 = legendHistos[0].Clone()
+        legendHistos2 = legendHistos[0].Clone()
+        legendHistos3 = legendHistos[0].Clone()
 
         legendHistos[0].append((QCDHistList_withScale[1], 'From LL iso 1.5~3 (%.0f)' %QCDHistList_withScale[1].Integral()))
-        legendHistos[0].append((QCDHistList_withScale[2], 'From LL iso 3~6 (%.0f)' %QCDHistList_withScale[2].Integral()))
-        legendHistos[0].append((QCDHistList_withScale[3], 'From LL iso 6~10 (%.0f)' %QCDHistList_withScale[3].Integral()))
-        legendHistos[0].append((QCDHistList_withScale[4], 'From LL iso 1.5~3, 3+ (%.0f)' %QCDHistList_withScale[4].Integral()))
+        legendHistos1.append((QCDHistList_withScale[2], 'From LL iso 3~6 (%.0f)' %QCDHistList_withScale[2].Integral()))
+        legendHistos2.append((QCDHistList_withScale[3], 'From LL iso 6~10 (%.0f)' %QCDHistList_withScale[3].Integral()))
+        legendHistos2.append((QCDHistList_withScale[4], 'From LL iso 3~10 (%.0f)' %QCDHistList_withScale[4].Integral()))
 
 
         QCDDiff_sub = []
@@ -300,9 +316,9 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
 
 
     psfile = '%s/%s_%s_IsoCompare.pdf' %(location, varName, fileName)
-    c = r.TCanvas("c","Test", 800, 1200)
+    c = r.TCanvas("c","Test", 1600, 1200)
 #     ps = r.TPDF(psfile,112)
-    c.Divide(1,2)
+    c.Divide(2,2)
 
     c.cd(1)
     var_background[0].SetTitle('SS Tight Events %s (%.1f fb^{-1}); %s; events / bin' %(titleName, Lumi,varName))
@@ -310,29 +326,47 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
     var_background[0].SetMinimum(0.01)
     var_background[0].Draw()
     var_data[0].Draw('PE same')
-    for i in range(nPlots-1):
-        QCDHistList_withScale[i+1].SetLineWidth(2)
-        QCDHistList_withScale[i+1].Draw('sameE')
+    var_signal[0].Draw('same')
+    QCDHistList_withScale[1].SetLineWidth(2)
+    QCDHistList_withScale[1].Draw('sameE')
     legendPosition = (0.63, 0.93 - 0.03*len(legendHistos[0]), 0.93, 0.9)
     l = tool.setMyLegend(lPosition=legendPosition, lHistList=legendHistos[0])
     l.Draw('same')
     c.Update()
 
     c.cd(2)
-    QCDDiff[0].SetMaximum(3)
-    QCDDiff[0].SetMinimum(0)
-    QCDDiff[0].Draw('PE')
-    QCDDiff[0].SetLineColor(r.kRed)
-    QCDDiff[1].SetLineColor(r.kOrange-4)
-    QCDDiff[2].SetLineColor(r.kSpring+1)
-    QCDDiff[3].SetLineColor(r.kBlue-2)
-
-    QCDDiff[1].Draw('PEsame')
-    QCDDiff[2].Draw('PEsame')
-    QCDDiff[3].Draw('PEsame')
-
-    fit1.Draw('same')
+    var_background[0].Draw()
+    var_data[0].Draw('PE same')
+    var_signal[0].Draw('same')
+    QCDHistList_withScale[2].SetLineWidth(2)
+    QCDHistList_withScale[2].Draw('sameE')
+    legendPosition = (0.63, 0.93 - 0.03*len(legendHistos1), 0.93, 0.9)
+    l1 = tool.setMyLegend(lPosition=legendPosition, lHistList=legendHistos1)
+    l1.Draw('same')
     c.Update()
+
+    c.cd(3)
+    var_background[0].Draw()
+    var_data[0].Draw('PE same')
+    var_signal[0].Draw('same')
+    QCDHistList_withScale[3].SetLineWidth(2)
+    QCDHistList_withScale[3].Draw('sameE')
+    legendPosition = (0.63, 0.93 - 0.03*len(legendHistos2), 0.93, 0.9)
+    l2 = tool.setMyLegend(lPosition=legendPosition, lHistList=legendHistos2)
+    l2.Draw('same')
+    c.Update()
+
+    c.cd(4)
+    var_background[0].Draw()
+    var_data[0].Draw('PE same')
+    var_signal[0].Draw('same')
+    QCDHistList_withScale[4].SetLineWidth(2)
+    QCDHistList_withScale[4].Draw('sameE')
+    legendPosition = (0.63, 0.93 - 0.03*len(legendHistos3), 0.93, 0.9)
+    l3 = tool.setMyLegend(lPosition=legendPosition, lHistList=legendHistos3)
+    l3.Draw('same')
+    c.Update()
+
     c.Print('%s' %psfile)
 
     print var_data[1].Integral()

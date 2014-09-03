@@ -9,21 +9,8 @@ from array import array
 import optparse
 import math
 import varsList
-import kinfit
 
-r.gROOT.SetBatch(True)
-r.gErrorIgnoreLevel = 2000
-r.gStyle.SetOptStat("e")
-
-xLabels = ['processedEvents', 'PATSkimmedEvents',
-'eTau',"eleTausEleID", "eleTausEleConvRej", "eleTausElePtEta",
-"eleTausTauPtEta", "eleTausDecayFound", "eleTausVLooseIsolation",
-"eleTausTauMuonVeto", "eleTausTauElectronVeto", "eleTausTauElectronVetoM",
-"eleTausEleIsolation", "eleTausLooseIsolation", "eleTauOS",
-"muTau", "muTauId", "muTausMuonPtEta", "muTausTauPtEta", "muTausDecayFound",
-"muTausVLooseTauIsolation", "muTausTauElectronVeto", "muTausTauMuonVeto",
-"muTausMuonIsolation", "muTausLooseTauIsolation", "muTausLooseIsolation", "muTausOS",
-'atLeastOneDiTau', 'ptEta1', 'ptEta2', 'tau1Hadronic', 
+xLabels = ['processedEvents', 'PATSkimmedEvents', 'atLeastOneDiTau', 'ptEta1', 'ptEta2', 'tau1Hadronic', 
 	   'tau2Hadronic','muonVeto1', 'muonVeto2', 'eleVeto1', 'eleVeto2', 'isolation1', 'relaxed', 'myCut']
 
 lvClass = r.Math.LorentzVector(r.Math.PtEtaPhiM4D('double'))
@@ -41,10 +28,6 @@ tau1 = lvClass()
 tau2 = lvClass()
 combinedJJ = lvClass()
 sv4Vec = lvClass()
-
-#Setup Kinematic Fit
-kinfit.setup(path="/afs/hep.wisc.edu/home/zmao/myScripts/H2hh2bbTauTau/python/HHKinFit",
-             lib="libHHKinFit.so",)
 
 def calcTrigOneTauEff(eta, pt, data = True, fitStart=25):
         le14_da = {20: (0.898, 44.3, 1.02),
@@ -94,10 +77,10 @@ options = opts()
 def findFullMass(jetsList = [], sv4Vec = ''):
     jetsList = sorted(jetsList, key=itemgetter(0), reverse=True)
     combinedJJ = jetsList[0][1]+jetsList[1][1]
-    if jetsList[1][0] > 0 and jetsList[0][1].pt() > 30 and jetsList[1][1].pt() > 30 and abs(jetsList[0][1].eta()) < 2.4 and abs(jetsList[1][1].eta()) < 2.4:
-        return combinedJJ, jetsList[0][0], jetsList[1][0], jetsList[0][1], jetsList[1][1], (combinedJJ+sv4Vec).mass(), r.Math.VectorUtil.DeltaR(jetsList[0][1], jetsList[1][1]), jetsList[0][2], jetsList[1][2]
-    else:
-        return -1, -1, -1, -1, -1, -1, -1, -1, -1
+#     if jetsList[1][0] > 0 and jetsList[0][1].pt() > 30 and jetsList[1][1].pt() > 30 and abs(jetsList[0][1].eta()) < 2.4 and abs(jetsList[1][1].eta()) < 2.4:
+    return combinedJJ, jetsList[0][0], jetsList[1][0], jetsList[0][1], jetsList[1][1], (combinedJJ+sv4Vec).mass(), r.Math.VectorUtil.DeltaR(jetsList[0][1], jetsList[1][1]), jetsList[0][2], jetsList[1][2]
+#     else:
+#         return -1, -1, -1, -1, -1, -1, -1, -1, -1
 
 def findGenJet(j1Name, jet1, j2Name, jet2, tChain):
     genJet1 = lvClass()
@@ -150,23 +133,23 @@ def getRegVars(jName, tChain):
     
     jet = lvClass()
     SoftLeptPt = 0
-    jet.SetCoordinates(varsList.findVarInChain_Data(tChain, '%sPt' %jName), varsList.findVarInChain_Data(tChain,'%sEta' %jName),
-                       varsList.findVarInChain_Data(tChain, '%sPhi' %jName), 0)
-    if varsList.findVarInChain_Data(tChain,'%sSoftLeptPID' %jName) == 0:
+    jet.SetCoordinates(varsList.findVarInChain(tChain, '%sPt' %jName), varsList.findVarInChain(tChain,'%sEta' %jName),
+                       varsList.findVarInChain(tChain, '%sPhi' %jName), 0)
+    if varsList.findVarInChain(tChain,'%sSoftLeptPID' %jName) == 0:
         SoftLeptPtRel = 0
         SoftLeptdR = 0
     else:
-        SoftLeptPtRel = varsList.findVarInChain_Data(tChain,'%sPt' %jName) - varsList.findVarInChain_Data(tChain,'%sSoftLeptPt' %jName)
+        SoftLeptPtRel = varsList.findVarInChain(tChain,'%sPt' %jName) - varsList.findVarInChain(tChain,'%sSoftLeptPt' %jName)
         softLept = lvClass()
-        softLept.SetCoordinates(varsList.findVarInChain_Data(tChain, '%sSoftLeptPt' %jName), varsList.findVarInChain_Data(tChain,'%sSoftLeptEta' %jName),
-                                varsList.findVarInChain_Data(tChain, '%sSoftLeptPhi' %jName), 0)
+        softLept.SetCoordinates(varsList.findVarInChain(tChain, '%sSoftLeptPt' %jName), varsList.findVarInChain(tChain,'%sSoftLeptEta' %jName),
+                                varsList.findVarInChain(tChain, '%sSoftLeptPhi' %jName), 0)
         SoftLeptdR = r.Math.VectorUtil.DeltaR(softLept, jet)
-        SoftLeptPt = varsList.findVarInChain_Data(tChain, '%sSoftLeptPt' %jName)
+        SoftLeptPt = varsList.findVarInChain(tChain, '%sSoftLeptPt' %jName)
 
     if SoftLeptPt < 0:
         SoftLeptPt = 0
 
-    return varsList.findVarInChain_Data(tChain, '%sPtUncorr' %jName), varsList.findVarInChain_Data(tChain, '%sEt' %jName), varsList.findVarInChain_Data(tChain, '%sMt' %jName), varsList.findVarInChain_Data(tChain, '%sptLeadTrk' %jName), varsList.findVarInChain_Data(tChain, '%sVtx3dL' %jName),varsList.findVarInChain_Data(tChain, '%sVtx3deL' %jName), varsList.findVarInChain_Data(tChain, '%svtxMass' %jName), varsList.findVarInChain_Data(tChain, '%sVtxPt' %jName), varsList.findVarInChain_Data(tChain, '%sJECUnc' %jName), float(varsList.findVarInChain_Data(tChain, '%sNtot' %jName)), SoftLeptPtRel, SoftLeptPt, SoftLeptdR
+    return varsList.findVarInChain(tChain, '%sPtUncorr' %jName), varsList.findVarInChain(tChain, '%sEt' %jName), varsList.findVarInChain(tChain, '%sMt' %jName), varsList.findVarInChain(tChain, '%sptLeadTrk' %jName), varsList.findVarInChain(tChain, '%sVtx3dL' %jName),varsList.findVarInChain(tChain, '%sVtx3deL' %jName), varsList.findVarInChain(tChain, '%svtxMass' %jName), varsList.findVarInChain(tChain, '%sVtxPt' %jName), varsList.findVarInChain(tChain, '%sJECUnc' %jName), float(varsList.findVarInChain(tChain, '%sNtot' %jName)), SoftLeptPtRel, SoftLeptPt, SoftLeptdR
 
 
 def setDPhiInRange(dPhi):
@@ -184,13 +167,12 @@ signalEntries = enVars.signalEntries
 ttEntries = enVars.ttEntries
 ZZEntries = enVars.ZZEntries
 
-
 #*******Get Sample Name and Locations******
 sampleLocations = enVars.sampleLocations
 
 preVarList = ['EVENT', 'HMass', 'svMass', 'svPt', 'svEta', 'svPhi', 'J1Pt', 'J1Eta','J1Phi', 'J1Mass', 'NBTags', 'iso1', 'iso2', 'mJJ', 'J2Pt', 'J2Eta','J2Phi', 'J2Mass','pZeta', 'pZ', 'm1', 'm2',
            'pZV', 'J3Pt', 'J3Eta','J3Phi', 'J3Mass', 'J4Pt', 'J4Eta','J4Phi', 'J4Mass', 'J1CSVbtag', 'J2CSVbtag', 'J3CSVbtag', 'J4CSVbtag', 'pt1', 'eta1', 'phi1', 'pt2', 'eta2', 'phi2', 'met', 
-           'charge1', 'charge2',  'metphi',  
+           'charge1', 'charge2',  'metphi', 
            'J1PtUncorr', 'J1VtxPt', 'J1Vtx3dL', 'J1Vtx3deL', 'J1ptLeadTrk', 'J1vtxMass', 'J1vtxPt', 'J1Ntot', 
            'J1SoftLepPt', 'J1SoftLepEta', 'J1SoftLepPhi', 'J1SoftLepPID', 'J1JECUnc', 'J1Et', 'J1Mt',
            'J2PtUncorr', 'J2VtxPt', 'J2Vtx3dL', 'J2Vtx3deL', 'J2ptLeadTrk', 'J2vtxMass', 'J2vtxPt', 'J2Ntot', 
@@ -198,8 +180,7 @@ preVarList = ['EVENT', 'HMass', 'svMass', 'svPt', 'svEta', 'svPhi', 'J1Pt', 'J1E
            'J3PtUncorr', 'J3VtxPt', 'J3Vtx3dL', 'J3Vtx3deL', 'J3ptLeadTrk', 'J3vtxMass', 'J3vtxPt', 'J3Ntot', 
            'J3SoftLepPt', 'J3SoftLepEta', 'J3SoftLepPhi', 'J3SoftLepPID', 'J3JECUnc', 'J3Et', 'J3Mt',
            'J4PtUncorr', 'J4VtxPt', 'J4Vtx3dL', 'J4Vtx3deL', 'J4ptLeadTrk', 'J4vtxMass', 'J4vtxPt', 'J4Ntot', 
-           'J4SoftLepPt', 'J4SoftLepEta', 'J4SoftLepPhi', 'J4SoftLepPID', 'J4JECUnc', 'J4Et', 'J4Mt', 'tauDecayMode1', 'tauDecayMode2',
-           'mvacov00','mvacov01','mvacov10','mvacov11', 'byIsolationMVA2raw_1', 'byIsolationMVA2raw_2'
+           'J4SoftLepPt', 'J4SoftLepEta', 'J4SoftLepPhi', 'J4SoftLepPID', 'J4JECUnc', 'J4Et', 'J4Mt', 'tauDecayMode1', 'tauDecayMode2'
           ]
 genVarList = ['genBPt', 'genBEta', 'genBPhi','genBMass', 'genTauPt', 'genTauEta', 'genTauPhi', 'genElePt', 'genEleEta', 
               'genElePhi', 'genMuPt', 'genMuEta', 'genMuPhi','J1GenPt', 'J1GenEta', 'J1GenPhi', 'J1GenMass',
@@ -313,10 +294,6 @@ for iSample, iLocation in sampleLocations:
     CSVJ2SoftLeptPt = array('f', [0.])
     CSVJ2SoftLeptdR = array('f', [0.])
 
-    chi2KinFit = array('f', [0.])
-    fMassKinFit = array('f', [0.])
-
-
     iChain.LoadTree(0)
     iTree = iChain.GetTree().CloneTree(0)
     iSample = iSample + '_%s' %('all' if options.nevents == "-1" else options.nevents)
@@ -355,9 +332,6 @@ for iSample, iLocation in sampleLocations:
     iTree.Branch("metTauPairDPhi", metTauPairDPhi, "metTauPairDPhi/F")
     iTree.Branch("metJetPairDPhi", metJetPairDPhi, "metJetPairDPhi/F")
     iTree.Branch("metSvTauPairDPhi", metSvTauPairDPhi, "metSvTauPairDPhi/F")
-    iTree.Branch("chi2KinFit", chi2KinFit, "chi2KinFit/F")
-    iTree.Branch("fMassKinFit", fMassKinFit, "fMassKinFit/F")
-
     if not isData:
         iTree.Branch("dRGenJet1Match", dRGenJet1Match, "dRGenJet1Match/F")
         iTree.Branch("dRGenJet2Match", dRGenJet2Match, "dRGenJet2Match/F")
@@ -429,8 +403,8 @@ for iSample, iLocation in sampleLocations:
         sv4Vec.SetCoordinates(iChain.svPt.at(0), iChain.svEta.at(0), iChain.svPhi.at(0), iChain.svMass.at(0))
         bb = lvClass()
         bb, CSVJ1[0], CSVJ2[0], CSVJet1, CSVJet2, fullMass[0], dRJJ[0], j1Name, j2Name = findFullMass(jetsList=jetsList, sv4Vec=sv4Vec) 
-        if bb == -1:
-            continue
+#         if bb == -1:
+#             continue
         matchGenJet1Pt[0] = 0
         matchGenJet2Pt[0] = 0
 
@@ -515,7 +489,6 @@ for iSample, iLocation in sampleLocations:
 
         eff1 = calcTrigOneTauEff(eta=iChain.eta1.at(0), pt=iChain.pt1.at(0), data = True, fitStart=25)
         eff2 = calcTrigOneTauEff(eta=iChain.eta2.at(0), pt=iChain.pt2.at(0), data = True, fitStart=25)
-
         triggerEff1[0] = eff1
         triggerEff2[0] = eff2        
         triggerEff[0] = eff1*eff2
@@ -523,10 +496,6 @@ for iSample, iLocation in sampleLocations:
             triggerEff[0] = 1
             triggerEff1[0] = 1
             triggerEff2[0] = 1
-
-        #For Kinematic Fit
-        chi2KinFit[0], fMassKinFit[0] = kinfit.fit(iChain, CSVJet1, CSVJet2)
-
         iTree.Fill()
         counter += 1
         tool.printProcessStatus(iEntry, nEntries, 'Saving to file %s.root' %(iSample))

@@ -78,8 +78,10 @@ def passCut(tree, bTag, region):
 #         return 0
 #     if tree.pt1.size() > 1:
 #         return 0
-    isoCut = 6
-    iso_count = 1.5
+    isoCut = 3
+    iso_count = 3
+    if  tree.mJJ<90  or tree.mJJ>140:
+        return 0
 
     if region == 'LL':
         if  tree.iso1.at(0)>1.5  and tree.iso2.at(0)>1.5:
@@ -108,13 +110,13 @@ def passCut(tree, bTag, region):
         maxIso = 10
         if  tree.iso1.at(0) > maxIso  or tree.iso2.at(0) > maxIso:
             iso_count = 5
-#         elif  tree.iso1.at(0)>isoCut and tree.iso2.at(0)>isoCut:
-#             iso_count = 1
+        elif  tree.iso1.at(0)>isoCut and tree.iso2.at(0)>isoCut:
+            iso_count = 1
 
-        elif  1.5<tree.iso1.at(0)<3 and 3<tree.iso2.at(0):
-            iso_count = 1
-        elif  1.5<tree.iso2.at(0)<3 and 3<tree.iso1.at(0):
-            iso_count = 1
+#         elif  1.5<tree.iso1.at(0)<3 and 3<tree.iso2.at(0):
+#             iso_count = 1
+#         elif  1.5<tree.iso2.at(0)<3 and 3<tree.iso1.at(0):
+#             iso_count = 1
 
         elif (tree.iso1.at(0)>isoCut and tree.iso2.at(0)<1.5) or (tree.iso2.at(0)>isoCut and tree.iso1.at(0)<1.5):
             iso_count = 1
@@ -255,8 +257,9 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
                 ('DY1JetsToLL', preFix + 'DY1JetsToLL_eff2_all.root', 561000, r.kGreen-7),
                 ('DY2JetsToLL', preFix + 'DY2JetsToLL_eff2_all.root', 181000, r.kGreen-7),
                 ('DY3JetsToLL', preFix + 'DY3JetsToLL_eff2_all.root', 51100, r.kGreen-7),
-                ('tt_full_lep',preFix + 'tt_eff_all.root', 26197.5, r.kRed-7),
-                ('tt_semi_lep',preFix + 'tt_semi_eff_all.root', 109281, r.kAzure+7)]
+                ('tt_MSDecays',preFix + 'TTJets_MSDecays_all.root', 249500, r.kAzure+7),]
+#                 ('tt_full_lep',preFix + 'tt_eff_all.root', 26197.5, r.kRed-7),
+#                 ('tt_semi_lep',preFix + 'tt_semi_eff_all.root', 109281, r.kAzure+7)]
 
     histList = []
     histList_4QCD = []
@@ -567,7 +570,7 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
     #ps.Close()
     c.Clear()
     c.SetGrid()
-    XSRange = [0.02, 0.5]
+    XSRange = [0.05, 0.1]
     line = r.TF1('line', '[0]', XSRange[0], XSRange[1])
     plotHist, histNew, min, xMin = drawX2vsAlpha(QCDHistList[0],QCDHistList[2], 100, XSRange[0], XSRange[1])
     line.SetParameter(0, min+1)

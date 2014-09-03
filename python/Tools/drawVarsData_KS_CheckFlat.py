@@ -78,7 +78,7 @@ def passCut(tree, bTag, region):
 #         return 0
 #     if tree.pt1.size() > 1:
 #         return 0
-    isoCut = 1.5
+    isoCut = 3
     iso_count = 3
 
     if region == 'LL':
@@ -130,7 +130,7 @@ def findBin(x, nBins, xMin, xMax):
         return bin
 
 def findPtScale(pt1, pt2, direction, region):
-    scaleDictUp = {'LL': 0.140, #0.352, #1.690, #0.051, #0.038, #  
+    scaleDictUp = {'LL': 0.051, #0.352, #1.690, #0.051, #0.038, #  
                    'LT': 0.248, #0.221,
                    'TL': 0.229, #0.201
                   }  
@@ -178,7 +178,8 @@ def getAccuDist(hist, xMin, xMax, name):
 
 def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, rangeMin, rangeMax, location, bTag, predict, predictPtBin, region):
     r.gStyle.SetOptStat(0)
-    preFix = 'ClassApp_both_ClassApp_QCD_ClassApp_EWK_TMVARegApp_'
+#     preFix = 'ClassApp_both_ClassApp_QCD_ClassApp_EWK_TMVARegApp_'
+    preFix = 'ClassApp_both_TMVARegApp_'
 
     fileList = [('ZZ', preFix + 'ZZ_eff_all.root', 2500, 5),
                 ('WZJetsTo2L2Q', preFix + 'WZJetsTo2L2Q_eff_all.root', 2207, 5),
@@ -190,7 +191,15 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
                 ('DY2JetsToLL', preFix + 'DY2JetsToLL_eff2_all.root', 181000, r.kGreen-7),
                 ('DY3JetsToLL', preFix + 'DY3JetsToLL_eff2_all.root', 51100, r.kGreen-7),
                 ('tt_full_lep',preFix + 'tt_eff_all.root', 26197.5, r.kRed-7),
-                ('tt_semi_lep',preFix + 'tt_semi_eff_all.root', 109281, r.kAzure+7)]
+                ('tt_semi_lep',preFix + 'tt_semi_eff_all.root', 109281, r.kAzure+7),
+#                 ('tt_MSDecays',preFix + 'TTJets_MSDecays_all.root', 249500, r.kAzure+7),
+
+#                 ('VBF_HToTauTau',preFix + 'VBF_HToTauTau_all.root', 1.578*0.0632, r.kRed),
+#                 ('GluGluToHToTauTau',preFix + 'GluGluToHToTauTau_all.root', 19.52*0.0632, r.kRed),
+#                 ('WH_ZH_TTH_HToTauTau',preFix + 'WH_ZH_TTH_HToTauTau_all.root', 0.0632*(0.69669+0.3943+0.1302), r.kRed),
+
+]
+
 
     histList = []
     histList_4QCD = []
@@ -375,6 +384,7 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
                 var_signal[i].SetLineWidth(4)
                 var_signal[i].Scale(signalDict[signalSelection][1]*sigBoost*Lumi/initNEventsSignal.GetBinContent(1))
                 if sigBoost != 1:
+                    sum = var_signal[i].Integral(0, var_signal[i].GetNbinsX()+1)
                     legendHistos[i].append((var_signal[i], '%sx%0.f (%.2f)' %(signalSelection, sigBoost, var_signal[i].Integral())))
                 else:
                     legendHistos[i].append((var_signal[i], '%s (%.2f)' %(signalSelection, var_signal[i].Integral())))
@@ -412,6 +422,17 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
         QCDHistList_withScale[1] = tool.addFakeTHStack(QCDHistList_withScale[1],var_background[0])
         QCDHistList_withScale[0] = tool.addFakeTHStack(QCDHistList_withScale[0],var_background[0])
 
+#     var_data[1].Sumw2()
+#     MC_List[1].Sumw2()
+    for i in range(varRange[0]):
+        oldValue = var_data[1].GetBinContent(i+1)
+        mcValue = MC_List[1].GetBinContent(i+1)
+        if oldValue - mcValue > 0:
+            QCDDiff2.SetBinContent(i+1, (oldValue - mcValue)/oldValue)
+            QCDDiff2.SetBinError(i+1, MC_List[1].GetBinError(i+1)/oldValue)
+    print QCDDiff2.Integral()
+
+
     QCDDiff = var_data[1].Clone()
     QCDDiff_sub = QCDHistList_withScale[2].Clone() + MC_List[1].Clone()
     QCDDiff.Divide(QCDDiff_sub)
@@ -420,9 +441,6 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
     QCDDiff_R2T_sub = QCDHistList_withScale[3].Clone() + MC_List[0].Clone()
     QCDDiff_R2T.Divide(QCDDiff_R2T_sub)
 
-
-    QCDDiff2 = MC_List[1].Clone()
-    QCDDiff2.Divide(var_data[1].Clone())
 
 
     legendPosition = (0.6, 0.7, 0.90, 0.88)
@@ -449,14 +467,14 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
     ks_values2 = []
     tmpHists2 = []
     nTimes = 10000
-    for i in range(nTimes):
-        tool.printProcessStatus(i, nTimes, processName = 'Making Sample Histograms')
-        tmpHists.append(r.TH1F('tmpHist_%i' %(i),"", nBins, varRange[1], varRange[2]))
-        tmpHists[i].FillRandom(QCDHistList_4KS[2], 100)
-        ks_values.append(QCDHistList_4KS[0].KolmogorovTest(tmpHists[i]))
-        tmpHists2.append(r.TH1F('tmpHist2_%i' %(i),"", nBins, varRange[1], varRange[2]))
-        tmpHists2[i].FillRandom(QCDHistList_4KS[2], 100)
-        ks_values2.append(QCDHistList_4KS[2].KolmogorovTest(tmpHists[i]))
+#     for i in range(nTimes):
+#         tool.printProcessStatus(i, nTimes, processName = 'Making Sample Histograms')
+#         tmpHists.append(r.TH1F('tmpHist_%i' %(i),"", nBins, varRange[1], varRange[2]))
+#         tmpHists[i].FillRandom(QCDHistList_4KS[2], 100)
+#         ks_values.append(QCDHistList_4KS[0].KolmogorovTest(tmpHists[i]))
+#         tmpHists2.append(r.TH1F('tmpHist2_%i' %(i),"", nBins, varRange[1], varRange[2]))
+#         tmpHists2[i].FillRandom(QCDHistList_4KS[2], 100)
+#         ks_values2.append(QCDHistList_4KS[2].KolmogorovTest(tmpHists[i]))
     print ''
     print 'KS Test 1: %.3f' %KS1
     print 'KS Test 2: %.3f' %KS2
@@ -535,50 +553,50 @@ def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, ran
     c.Update()
     c.Print('%s' %psfile)
     c.cd(1)
-    r.gPad.SetLogy()
-    QCDDiff2.SetTitle('MC/Data OS Relaxed Events %s (%.1f fb^{-1}); %s; MC/Data' %(titleName, Lumi,varName))
+    r.gPad.SetLogy(0)
+    QCDDiff2.SetTitle('QCD/Data OS Relaxed Events %s (%.1f fb^{-1}); %s; QCD/Data' %(titleName, Lumi,varName))
     QCDDiff2.SetMarkerStyle(8)
     QCDDiff2.SetMarkerSize(0.9)
-    QCDDiff2.SetMinimum(0.001)
-    QCDDiff2.SetMaximum(1)
+    QCDDiff2.SetMinimum(0.0)
+    QCDDiff2.SetMaximum(1.0)
     QCDDiff2.Draw('PE')
     fit2.Draw('same')
     lFit2 = tool.setMyLegend((0.15, 0.7, 0.9, 0.85),[(fit2,'Scale between relaxed/tight in SS region: %.3f \pm %.3f' %(fit2.GetParameter(0), fit2.GetParError(0)))])
     lFit2.Draw('same')
     c.Update()
     c.Print('%s' %psfile)
-    c.Clear()
-    c.Divide(1,2)
-    c.cd(1)
-    graph = r.TH1F('graph', '', 20, 0, 1.0)
-    graph2 = r.TH1F('graph2', '', 20, 0, 1.0)
+#     c.Clear()
+#     c.Divide(1,2)
+#     c.cd(1)
+#     graph = r.TH1F('graph', '', 20, 0, 1.0)
+#     graph2 = r.TH1F('graph2', '', 20, 0, 1.0)
 
-    for i in range(nTimes):
-        tool.printProcessStatus(i, nTimes, processName = 'Plotting Sample Histograms')
-        graph.Fill(ks_values[i])
-        graph2.Fill(ks_values2[i])
-    print ''
-    graph.SetTitle('KS Tests Between SS Tight and Relaxed; KS; ')
-    graph.SetMarkerStyle(8)
-    graph.Draw('PE')
-    c.cd(2)
-    graph2.SetTitle('KS Self-test in SS Relaxed; KS; ')
-    graph2.SetMarkerStyle(8)
-    graph2.Draw('PE')
-    c.Update()
-    c.Print('%s' %psfile)
-    c.Clear()
-
-    a1 = getAccuDist(QCDHistList_4KS[0], varRange[1], varRange[2], 'SS Tight')
-    a2 = getAccuDist(QCDHistList_4KS[2], varRange[1], varRange[2], 'SS Relax')
-    a1.SetLineColor(r.kRed)
-    l3 = tool.setMyLegend((0.15, 0.75, 0.3, 0.85),[(a1,'SS Tight'),
-                                                  (a2,'SS Relax')])
-
-    a1.SetTitle('Cumulative Distribution; %s;' %varName)
-    a1.Draw()
-    a2.Draw('same')
-    l3.Draw('same')
+#     for i in range(nTimes):
+#         tool.printProcessStatus(i, nTimes, processName = 'Plotting Sample Histograms')
+#         graph.Fill(ks_values[i])
+#         graph2.Fill(ks_values2[i])
+#     print ''
+#     graph.SetTitle('KS Tests Between SS Tight and Relaxed; KS; ')
+#     graph.SetMarkerStyle(8)
+#     graph.Draw('PE')
+#     c.cd(2)
+#     graph2.SetTitle('KS Self-test in SS Relaxed; KS; ')
+#     graph2.SetMarkerStyle(8)
+#     graph2.Draw('PE')
+#     c.Update()
+#     c.Print('%s' %psfile)
+#     c.Clear()
+# 
+#     a1 = getAccuDist(QCDHistList_4KS[0], varRange[1], varRange[2], 'SS Tight')
+#     a2 = getAccuDist(QCDHistList_4KS[2], varRange[1], varRange[2], 'SS Relax')
+#     a1.SetLineColor(r.kRed)
+#     l3 = tool.setMyLegend((0.15, 0.75, 0.3, 0.85),[(a1,'SS Tight'),
+#                                                   (a2,'SS Relax')])
+# 
+#     a1.SetTitle('Cumulative Distribution; %s;' %varName)
+#     a1.Draw()
+#     a2.Draw('same')
+#     l3.Draw('same')
     c.Print('%s)' %psfile)
     #ps.Close()
     print "Plot saved at %s" %(psfile)

@@ -13,8 +13,8 @@ j2Reg = lvClass()
 def opts():
     parser = optparse.OptionParser()
     parser.add_option("--i", dest="inputFile", default = False, help="")
-    parser.add_option("--l", dest="lep", default = "ele", help="")
-    parser.add_option("--m", dest="max", default = 1000, help="")
+    parser.add_option("--l", dest="lep", default = "mu", help="")
+    parser.add_option("--m", dest="max", default = 500, help="")
 
 
     options, args = parser.parse_args()
@@ -23,12 +23,17 @@ def opts():
 def passCut(iTree):
     if iTree.J1CSVbtagCSVSort < 0.679 or iTree.J2CSVbtagCSVSort < 0.244:
         return False
+    if iTree.charge != 0:
+        return False
     if iTree.pt2 < 45:
         return False
+    if 100 < iTree.svMass < 150:
+        return False
+
     return True
 
 options = opts()
-ran = [10, -4, 4]
+ran = [22, 30, 250]
 
 
 yMax = float(options.max)
@@ -42,24 +47,14 @@ legendHistos = []
 
 Lumi = 19.7
 
-fileList = [('ZZ', preFix + 'ZZ_eff_all.root', 2500, 5),
-            ('WZJetsTo2L2Q', preFix + 'WZJetsTo2L2Q_eff_all.root', 2207, 5),
-            ('tt_full_lep',preFix + 'tt_eff_all.root', 26197.5, r.kRed-7),
-            ('tt_semi_lep',preFix + 'tt_semi_eff_all.root', 109281, r.kAzure+7),
-                #('DYJetsToLL', 'TMVARegApp_DYJetsToLL_eff_all.root', 3504000, r.kGreen-7),
-            ('DY1JetsToLL', preFix + 'DY1JetsToLL_eff2_all.root', 561000, r.kGreen-7),
-            ('DY2JetsToLL', preFix + 'DY2JetsToLL_eff2_all.root', 181000, r.kGreen-7),
-            ('DY3JetsToLL', preFix + 'DY3JetsToLL_eff2_all.root', 51100, r.kGreen-7),
-            ('W1JetsToLNu', preFix + 'W1JetsToLNu_eff2_all.root', 5400000, r.kMagenta-9),
-            ('W2JetsToLNu', preFix + 'W2JetsToLNu_eff2_all.root', 1750000, r.kMagenta-9),
-            ('W3JetsToLNu', preFix + 'W3JetsToLNu_eff2_all.root', 519000, r.kMagenta-9)]
+preFix = '/nfs_scratch/ojalvo/LTau_12_2/'
+
+fileList = [('ZZ', preFix + 'ZZ-LLQQ.root', 2500, 5),
+            ('tt_full_lep',preFix + 'TT_LL.root', 26197.5, r.kRed-7),
+            ('tt_semi_lep',preFix + 'TT_HL.root', 109281, r.kAzure+7)]
 
 totalBkg = r.TH1F('totalBkg','', ran[0], ran[1], ran[2])
 data = r.TH1F('data','', ran[0], ran[1], ran[2])
-
-ifile1 = r.TFile('/nfs_scratch/ojalvo/LTau_12_2/TT_HL.root')
-ifile2 = r.TFile('/nfs_scratch/ojalvo/LTau_12_2/TT_LL.root')
-ifile3 = r.TFile('/nfs_scratch/ojalvo/LTau_12_2/ZZ-LLQQ.root')
 
 dataFile = r.TFile('/nfs_scratch/ojalvo/LTau_12_2/DATA.root')
 
@@ -68,28 +63,6 @@ lepton = options.lep
 LEPTON = "ET"
 if lepton == "mu":
     LEPTON = "MT"
-
-i = 0
-for iSample, iFile, iXS, iColor in fileList:
-    background.append(r.TH1F(iSample,'', ran[0], ran[1], ran[2]))
-    files.append(r.TFile(iFile))
-    trees.append(files[i].Get("%sTauEventTreeFinal/eventTree" %lepton))
-    inits.append(files[i].Get("%s/results" %LEPTON).GetBinContent(1))
-    total = trees[i].GetEntries()
-    scale = Lumi*iXS/inits[i]
-    for i in range(total):
-        r.gStyle.SetOptStat(0)
-        tool.printProcessStatus(iCurrent=i, total=total, processName = 'Looping sample')
-        trees[i].GetEntry(i)
-        if not passCut(trees[i]):
-            continue
-        background[i].Fill(trees[i].phi2, scale)
-        background[i].SetFillColor(iColor)
-        stack.Add(background[i])
-        legendHistos.append((iSample, background[i]))
-    print ''
-    totalBkg = totalBkg + background[i]
-    i += 1
 
 dataTree = dataFile.Get("%sTauEventTreeFinal/eventTree" %lepton)
 totalData = dataTree.GetEntries()
@@ -100,9 +73,33 @@ for i in range(totalData):
     dataTree.GetEntry(i)
     if not passCut(dataTree):
         continue
-    data.Fill(dataTree.phi2)
+    data.Fill(dataTree.pt2)
+legendHistos.append((data, 'data (%.0f)' %data.Integral()))
+print ''
 
 legendPosition = (0.5, 0.7, 0.90, 0.88)
+
+i = 0
+for iSample, iFile, iXS, iColor in fileList:
+    background.append(r.TH1F(iSample,'', ran[0], ran[1], ran[2]))
+    files.append(r.TFile(iFile))
+    trees.append(files[i].Get("%sTauEventTreeFinal/eventTree" %lepton))
+    inits.append(files[i].Get("%s/results" %LEPTON).GetBinContent(1))
+    total = trees[i].GetEntries()
+    scale = Lumi*iXS/inits[i]
+    for j in range(total):
+        tool.printProcessStatus(iCurrent=j, total=total, processName = 'Looping sample')
+        trees[i].GetEntry(j)
+        if not passCut(trees[i]):
+            continue
+        background[i].Fill(trees[i].pt2, scale)
+        background[i].SetFillColor(iColor)
+    stack.Add(background[i])
+    legendHistos.append((background[i], '%s (%.1f)'%(iSample, background[i].Integral())))
+    print ''
+    totalBkg = totalBkg + background[i]
+    i += 1
+
 
 
 print ''
@@ -110,14 +107,17 @@ print ''
 psfile = 'LTauMCValidation_%s.pdf' %lepton
 
 c = r.TCanvas("c","Test", 800, 600)
-stack.SetTitle('MC Validation; tau phi; events / bin')
+stack.SetTitle('MC Validation 19.7 fb^{-1}; tau phi; events / bin')
 stack.SetMaximum(yMax)
 stack.Draw()
+stack.GetYaxis().SetTitleOffset(1.4)
 data.SetMarkerStyle(8)
 data.SetMarkerSize(0.9)
 data.Draw('sameE')
 l1 = tool.setMyLegend(lPosition=legendPosition, lHistList=legendHistos)
 l1.Draw("same")
+
+print 'data/MC %f'%(data.Integral()/totalBkg.Integral())
 
 c.Update()
 c.Print('%s(' %psfile)
