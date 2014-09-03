@@ -37,6 +37,7 @@ import time   # time accounting
 import getopt # command line parser
 import tool
 import ROOT as r
+import os
 # --------------------------------------------
 
 # Default settings for command line arguments
@@ -152,41 +153,25 @@ def main():
     # note that you may also use variable expressions, such as: "3*var1/var2*abs(var3)"
     # [all types of expressions that can also be parsed by TTree::Draw( "expression" )]
     #varList = ['svMass', 'mJJ', 'met/fMass','pZ - pZV']
-     varList = ['svMass', 'fMass', 'dRTauTau', 'dRJJ', 'svPt', 'dRhh', 'met', 'mJJReg',
-                'metTau1DPhi', 'metTau2DPhi', 'metJ1DPhi', 'metJ2DPhi', 'metTauPairDPhi', 'metSvTauPairDPhi', 'metJetPairDPhi',]
+#     varList = ['svMass', 'fMass', 'dRTauTau', 'dRJJ', 'svPt', 'dRhh', 'met', 'mJJReg',
+#                'metTau1DPhi', 'metTau2DPhi', 'metJ1DPhi', 'metJ2DPhi', 'metTauPairDPhi', 'metSvTauPairDPhi', 'metJetPairDPhi','CSVJ1', 'CSVJ2']
+    varList = ['svMass', 'dRTauTau', 'dRJJ', 'svPt', 'dRhh', 'met', 'mJJReg', 'metTau1DPhi', 'metTau2DPhi', 
+                'metJ1DPhi', 'metJ2DPhi', 'metTauPairDPhi', 'metSvTauPairDPhi', 'metJetPairDPhi','CSVJ1', 'CSVJ2']
+#     varList = ['svMass', 'dRTauTau', 'svPt', 'dRhh', 'met', 'mJJReg',
+#                 'metTau1DPhi', 'metTau2DPhi', 'metJ2DPhi', 'metJetPairDPhi','CSVJ1', 'CSVJ2']
+
     for iVar in varList:
         factory.AddVariable(iVar, 'F' )
 
-    #factory.AddVariable( "NBTags",'I' )
-
-    # You can add so-called "Spectator variables", which are not used in the MVA training, 
-    # but will appear in the final "TestTree" produced by TMVA. This TestTree will contain the 
-    # input variables, the response values of all trained MVAs, and the spectator variables
-#     factory.AddSpectator( "fMass")
-#     factory.AddSpectator( "spec2:=var1*3",  "Spectator 2", "units", 'F' )
-
-    # Read input data
-#     sigChain = r.TChain("ttTreeFinal/eventTree")
-#     bkg1Chain = r.TChain("ttTreeFinal/eventTree")
-#     bkg2Chain = r.TChain("ttTreeFinal/eventTree")
-
-    # Get the signal and background trees for training
-#     tool.addFiles(ch=sigChain, dirName="/hdfs/store/user/zmao/H2hh260_3-SUB-TT", knownEventNumber=0, maxFileNumber=-1)
-#     tool.addFiles(ch=bkg1Chain, dirName="/hdfs/store/user/zmao/tt_3-SUB-TT", knownEventNumber=0, maxFileNumber=-1)
-#     tool.addFiles(ch=bkg2Chain, dirName="/hdfs/store/user/zmao/ZZ_3-SUB-TT", knownEventNumber=0, maxFileNumber=-1)
-
-    iFileSig = TFile.Open("/scratch/zmao/relaxed_regression/%s" %(infname))
-
-    iFileBkg1 = TFile.Open("/scratch/zmao/relaxed_regression/TMVARegApp_tt_eff_all.root")
-    iFileBkg2 = TFile.Open("/scratch/zmao/relaxed_regression/TMVARegApp_ZZ_eff_all.root")
-    iFileBkg3 = TFile.Open("/scratch/zmao/relaxed_regression/TMVARegApp_tt_semi_eff_all.root")
-    iFileBkg4 = TFile.Open("/scratch/zmao/relaxed_regression/TMVARegApp_DY2JetsToLL_eff_all.root")
-    iFileBkg5 = TFile.Open("/scratch/zmao/relaxed_regression/TMVARegApp_DY3JetsToLL_eff_all.root")
-    iFileBkg6 = TFile.Open("/scratch/zmao/relaxed_regression/TMVARegApp_W1JetsToLNu_eff_all.root")
-    iFileBkg7 = TFile.Open("/scratch/zmao/relaxed_regression/TMVARegApp_W2JetsToLNu_eff_all.root")
-    iFileBkg8 = TFile.Open("/scratch/zmao/relaxed_regression/TMVARegApp_W3JetsToLNu_eff_all.root")
-
-#     iFileBkg = TFile.Open("/scratch/zmao/relaxed_regression/trainSample_relaxedsamebTag.root")
+    iFileSig = TFile.Open("/scratch/zmao/relaxed_regression2/%s" %(infname))
+    iFileBkg1 = TFile.Open("/scratch/zmao/relaxed_regression2/TMVARegApp_tt_eff_all.root")
+    iFileBkg2 = TFile.Open("/scratch/zmao/relaxed_regression2/TMVARegApp_ZZ_eff_all.root")
+    iFileBkg3 = TFile.Open("/scratch/zmao/relaxed_regression2/TMVARegApp_tt_semi_eff_all.root")
+    iFileBkg4 = TFile.Open("/scratch/zmao/relaxed_regression2/TMVARegApp_DY2JetsToLL_eff_all.root")
+    iFileBkg5 = TFile.Open("/scratch/zmao/relaxed_regression2/TMVARegApp_DY3JetsToLL_eff_all.root")
+    iFileBkg6 = TFile.Open("/scratch/zmao/relaxed_regression2/TMVARegApp_W1JetsToLNu_eff_all.root")
+    iFileBkg7 = TFile.Open("/scratch/zmao/relaxed_regression2/TMVARegApp_W2JetsToLNu_eff_all.root")
+    iFileBkg8 = TFile.Open("/scratch/zmao/relaxed_regression2/TMVARegApp_W3JetsToLNu_eff_all.root")
 
 
     sigChain = iFileSig.Get("eventTree")
@@ -198,7 +183,6 @@ def main():
     bkg6Chain = iFileBkg6.Get("eventTree")
     bkg7Chain = iFileBkg7.Get("eventTree")
     bkg8Chain = iFileBkg8.Get("eventTree")
-#     bkgChain = iFileBkg.Get("eventTree")
 
     # Global event weights (see below for setting event-wise weights)
     signalWeight     = 1 #0.0159/sigChain.GetEntries() #xs (pb)
@@ -220,15 +204,11 @@ def main():
     tmpHist = iFileBkg8.Get('preselection')
     W3JetsToLNu = 519/tmpHist.GetBinContent(1)
 
-#     print 'weight for bkg: \ttt\tZZ\ttt_semi\tDY\tW2Jets'
-#     print '\t\t\t%s\t%s\t%s\t%s\t%s' %(ttWeight, ZZWeight, tt_semiWeight, DY2JetsWeight, DY3JetsWeight, W1JetsToLNu, W2JetsToLNu, W3JetsToLNu)
-
     # ====== register trees ====================================================
     #
     # the following method is the prefered one:
     # you can add an arbitrary number of signal or background trees
     factory.AddSignalTree(sigChain, signalWeight)
-#     factory.AddBackgroundTree( bkgChain, 1 )
     factory.AddBackgroundTree( bkg1Chain, ttWeight )
     factory.AddBackgroundTree( bkg2Chain, ZZWeight )
     factory.AddBackgroundTree( bkg3Chain, tt_semiWeight )
@@ -292,7 +272,7 @@ def main():
 
     if "BDT" in mlist:
          factory.BookMethod( TMVA.Types.kBDT, "BDT",
-                       "!H:!V:NTrees=150:MinNodeSize=2.5%:MaxDepth=3:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=100" )
+                       "!H:!V:NTrees=150:MinNodeSize=2.5%:MaxDepth=3:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=-1" )
 
 
     # --------------------------------------------------------------------------------------------------
@@ -315,10 +295,13 @@ def main():
     print "=== TMVAClassification is done!\n"
     
     # open the GUI for the result macros    
-    gROOT.ProcessLine( "TMVAGui(\"%s\")" % outfname )
+    #gROOT.ProcessLine( "TMVAGui(\"%s\")" % outfname )
     
     # keep the ROOT thread running
-    gApplication.Run() 
+    #gApplication.Run() 
+
+    ChangeWeightName = 'mv /afs/hep.wisc.edu/home/zmao/CMSSW_5_3_15/src/TMVA-v4.2.0/test/weights/TMVAClassification_BDT.weights.xml /afs/hep.wisc.edu/home/zmao/CMSSW_5_3_15/src/TMVA-v4.2.0/test/weights/TMVAClassification_BDT.weights_EWK_%i.xml' %len(varList)
+    os.system(ChangeWeightName)
 
 # ----------------------------------------------------------
 

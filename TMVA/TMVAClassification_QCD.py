@@ -37,6 +37,7 @@ import time   # time accounting
 import getopt # command line parser
 import tool
 import ROOT as r
+import os
 # --------------------------------------------
 
 # Default settings for command line arguments
@@ -152,8 +153,12 @@ def main():
     # note that you may also use variable expressions, such as: "3*var1/var2*abs(var3)"
     # [all types of expressions that can also be parsed by TTree::Draw( "expression" )]
     #varList = ['svMass', 'mJJ', 'met/fMass','pZ - pZV']
-     varList = ['svMass', 'fMass', 'dRTauTau', 'dRJJ', 'svPt', 'dRhh', 'met', 'mJJReg',
-                'metTau1DPhi', 'metTau2DPhi', 'metJ1DPhi', 'metJ2DPhi', 'metTauPairDPhi', 'metSvTauPairDPhi', 'metJetPairDPhi',]
+#     varList = ['svMass', 'fMass', 'dRTauTau', 'dRJJ', 'svPt', 'dRhh', 'met', 'mJJReg',
+#                'metTau1DPhi', 'metTau2DPhi', 'metJ1DPhi', 'metJ2DPhi', 'metTauPairDPhi', 'metSvTauPairDPhi', 'metJetPairDPhi','CSVJ1', 'CSVJ2']
+#     varList = ['svMass', 'dRTauTau', 'svPt', 'dRhh', 'met', 'mJJReg',
+#                 'metTau1DPhi', 'metTau2DPhi', 'metJ2DPhi', 'metJetPairDPhi','CSVJ1', 'CSVJ2']
+    varList = ['svMass', 'dRTauTau', 'dRJJ', 'svPt', 'dRhh', 'met', 'mJJReg', 'metTau1DPhi', 'metTau2DPhi', 
+                'metJ1DPhi', 'metJ2DPhi', 'metTauPairDPhi', 'metSvTauPairDPhi', 'metJetPairDPhi','CSVJ1', 'CSVJ2']
     for iVar in varList:
         factory.AddVariable(iVar, 'F' )
 
@@ -171,74 +176,24 @@ def main():
 #     bkg2Chain = r.TChain("ttTreeFinal/eventTree")
 
     # Get the signal and background trees for training
-#     tool.addFiles(ch=sigChain, dirName="/hdfs/store/user/zmao/H2hh260_3-SUB-TT", knownEventNumber=0, maxFileNumber=-1)
-#     tool.addFiles(ch=bkg1Chain, dirName="/hdfs/store/user/zmao/tt_3-SUB-TT", knownEventNumber=0, maxFileNumber=-1)
-#     tool.addFiles(ch=bkg2Chain, dirName="/hdfs/store/user/zmao/ZZ_3-SUB-TT", knownEventNumber=0, maxFileNumber=-1)
 
     iFileSig = TFile.Open("/scratch/zmao/relaxed_regression/%s" %(infname))
-
-    iFileBkg1 = TFile.Open("/scratch/zmao/relaxed_regression/TMVARegApp_tt_eff_all.root")
-    iFileBkg2 = TFile.Open("/scratch/zmao/relaxed_regression/TMVARegApp_ZZ_eff_all.root")
-    iFileBkg3 = TFile.Open("/scratch/zmao/relaxed_regression/TMVARegApp_tt_semi_eff_all.root")
-    iFileBkg4 = TFile.Open("/scratch/zmao/relaxed_regression/TMVARegApp_DY2JetsToLL_eff_all.root")
-    iFileBkg5 = TFile.Open("/scratch/zmao/relaxed_regression/TMVARegApp_DY3JetsToLL_eff_all.root")
-    iFileBkg6 = TFile.Open("/scratch/zmao/relaxed_regression/TMVARegApp_W1JetsToLNu_eff_all.root")
-    iFileBkg7 = TFile.Open("/scratch/zmao/relaxed_regression/TMVARegApp_W2JetsToLNu_eff_all.root")
-    iFileBkg8 = TFile.Open("/scratch/zmao/relaxed_regression/TMVARegApp_W3JetsToLNu_eff_all.root")
-
-#     iFileBkg = TFile.Open("/scratch/zmao/relaxed_regression/trainSample_relaxedsamebTag.root")
+    iFileBkg = TFile.Open("/scratch/zmao/relaxed_regression/trainSample_relaxedsamebTag.root")
 
 
     sigChain = iFileSig.Get("eventTree")
-    bkg1Chain = iFileBkg1.Get("eventTree")
-    bkg2Chain = iFileBkg2.Get("eventTree")
-    bkg3Chain = iFileBkg3.Get("eventTree")
-    bkg4Chain = iFileBkg4.Get("eventTree")
-    bkg5Chain = iFileBkg5.Get("eventTree")
-    bkg6Chain = iFileBkg6.Get("eventTree")
-    bkg7Chain = iFileBkg7.Get("eventTree")
-    bkg8Chain = iFileBkg8.Get("eventTree")
-#     bkgChain = iFileBkg.Get("eventTree")
+    bkgChain = iFileBkg.Get("eventTree")
 
     # Global event weights (see below for setting event-wise weights)
     signalWeight     = 1 #0.0159/sigChain.GetEntries() #xs (pb)
-
-    tmpHist = iFileBkg1.Get('preselection')
-    ttWeight = 26.2/tmpHist.GetBinContent(1)
-    tmpHist = iFileBkg2.Get('preselection')
-    ZZWeight = 2.5/tmpHist.GetBinContent(1)
-    tmpHist = iFileBkg3.Get('preselection')
-    tt_semiWeight = 109.3/tmpHist.GetBinContent(1)
-    tmpHist = iFileBkg4.Get('preselection')
-    DY2JetsWeight = 181/tmpHist.GetBinContent(1)
-    tmpHist = iFileBkg5.Get('preselection')
-    DY3JetsWeight = 51.1/tmpHist.GetBinContent(1)
-    tmpHist = iFileBkg6.Get('preselection')
-    W1JetsToLNu = 5400/tmpHist.GetBinContent(1)
-    tmpHist = iFileBkg7.Get('preselection')
-    W2JetsToLNu = 1750/tmpHist.GetBinContent(1)
-    tmpHist = iFileBkg8.Get('preselection')
-    W3JetsToLNu = 519/tmpHist.GetBinContent(1)
-
-#     print 'weight for bkg: \ttt\tZZ\ttt_semi\tDY\tW2Jets'
-#     print '\t\t\t%s\t%s\t%s\t%s\t%s' %(ttWeight, ZZWeight, tt_semiWeight, DY2JetsWeight, DY3JetsWeight, W1JetsToLNu, W2JetsToLNu, W3JetsToLNu)
 
     # ====== register trees ====================================================
     #
     # the following method is the prefered one:
     # you can add an arbitrary number of signal or background trees
     factory.AddSignalTree(sigChain, signalWeight)
-#     factory.AddBackgroundTree( bkgChain, 1 )
-    factory.AddBackgroundTree( bkg1Chain, ttWeight )
-    factory.AddBackgroundTree( bkg2Chain, ZZWeight )
-    factory.AddBackgroundTree( bkg3Chain, tt_semiWeight )
-    factory.AddBackgroundTree( bkg4Chain, DY2JetsWeight )
-    factory.AddBackgroundTree( bkg5Chain, DY3JetsWeight )
-    factory.AddBackgroundTree( bkg6Chain, W1JetsToLNu )
-    factory.AddBackgroundTree( bkg7Chain, W2JetsToLNu )
-    factory.AddBackgroundTree( bkg8Chain, W3JetsToLNu )
+    factory.AddBackgroundTree( bkgChain, 1 )
     factory.SetSignalWeightExpression('triggerEff')
-    factory.SetBackgroundWeightExpression('triggerEff')
 
     # To give different trees for training and testing, do as follows:
     #    factory.AddSignalTree( signalTrainingTree, signalTrainWeight, "Training" )
@@ -265,7 +220,7 @@ def main():
     # Apply additional cuts on the signal and background sample. 
     # example for cut: mycut = TCut( "abs(var1)<0.5 && abs(var2-0.5)<1" )
     mycutSig = TCut( "iso1<1.5 && iso2<1.5 && CSVJ1 > 0.679 && CSVJ2 > 0.244 && abs(eta1)<2.1 && abs(eta2)<2.1 && charge1 + charge2 == 0" ) 
-    mycutBkg = TCut( "iso1<1.5 && iso2<1.5 && CSVJ1 > 0.679 && CSVJ2 > 0.244 && abs(eta1)<2.1 && abs(eta2)<2.1 && charge1 + charge2 == 0" ) 
+    mycutBkg = TCut("")
     
     # Here, the relevant variables are copied over in new, slim trees that are
     # used for TMVA training and testing
@@ -292,7 +247,7 @@ def main():
 
     if "BDT" in mlist:
          factory.BookMethod( TMVA.Types.kBDT, "BDT",
-                       "!H:!V:NTrees=150:MinNodeSize=2.5%:MaxDepth=3:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=100" )
+                       "!H:!V:NTrees=150:MinNodeSize=2.5%:MaxDepth=3:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=-1" )
 
 
     # --------------------------------------------------------------------------------------------------
@@ -315,10 +270,12 @@ def main():
     print "=== TMVAClassification is done!\n"
     
     # open the GUI for the result macros    
-    gROOT.ProcessLine( "TMVAGui(\"%s\")" % outfname )
+#     gROOT.ProcessLine( "TMVAGui(\"%s\")" % outfname )
+    ChangeWeightName = 'mv /afs/hep.wisc.edu/home/zmao/CMSSW_5_3_15/src/TMVA-v4.2.0/test/weights/TMVAClassification_BDT.weights.xml /afs/hep.wisc.edu/home/zmao/CMSSW_5_3_15/src/TMVA-v4.2.0/test/weights/TMVAClassification_BDT.weights_QCD_%i.xml' %len(varList)
+    os.system(ChangeWeightName)
     
     # keep the ROOT thread running
-    gApplication.Run() 
+#     gApplication.Run() 
 
 # ----------------------------------------------------------
 

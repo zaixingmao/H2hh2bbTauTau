@@ -37,6 +37,9 @@ import time   # time accounting
 import getopt # command line parser
 import tool
 import ROOT as r
+import os
+import varsList
+
 # --------------------------------------------
 
 # Default settings for command line arguments
@@ -151,9 +154,16 @@ def main():
     # Define the input variables that shall be used for the classifier training
     # note that you may also use variable expressions, such as: "3*var1/var2*abs(var3)"
     # [all types of expressions that can also be parsed by TTree::Draw( "expression" )]
-    #varList = ['svMass', 'mJJ', 'met/fMass','pZ - pZV']
-     varList = ['svMass', 'fMass', 'dRTauTau', 'dRJJ', 'svPt', 'dRhh', 'met', 'mJJReg',
-                'metTau1DPhi', 'metTau2DPhi', 'metJ1DPhi', 'metJ2DPhi', 'metTauPairDPhi', 'metSvTauPairDPhi', 'metJetPairDPhi',]
+
+    
+    varList = varsList.varList
+#     varList = ['svMass', 'dRTauTau', 'dRJJ', 'svPt', 'dRhh', 'met', 'mJJReg', 'metTau1DPhi', 'metTau2DPhi', 
+#                 'metJ1DPhi', 'metJ2DPhi', 'metTauPairDPhi', 'metSvTauPairDPhi', 'metJetPairDPhi','CSVJ1', 'CSVJ2', 'fMass']
+#     varList = ['svMass', 'dRTauTau', 'dRJJ', 'svPt', 'dRhh', 'met', 'mJJReg', 'metSvTauPairDPhi', 'metJetPairDPhi', 'CSVJ2', 'iso1', 'iso2']
+#     varList = ['svMass', 'dRTauTau', 'dRJJ', 'svPt','ptJJ', 'mJJReg']
+#     varList = ['svMass', 'mJJReg']
+
+
     for iVar in varList:
         factory.AddVariable(iVar, 'F' )
 
@@ -175,19 +185,27 @@ def main():
 #     tool.addFiles(ch=bkg1Chain, dirName="/hdfs/store/user/zmao/tt_3-SUB-TT", knownEventNumber=0, maxFileNumber=-1)
 #     tool.addFiles(ch=bkg2Chain, dirName="/hdfs/store/user/zmao/ZZ_3-SUB-TT", knownEventNumber=0, maxFileNumber=-1)
 
-    iFileSig = TFile.Open("/scratch/zmao/relaxed_regression/%s" %(infname))
+    location = "/scratch/zmao/relaxed_regression2/"
+    massPoint = infname
+    if infname == "260":
+        infname = "TMVARegApp_H2hh260_all.root"
+    elif infname == "300":
+        infname = "TMVARegApp_H2hh300_all.root"
+    elif infname == "350":
+        infname = "TMVARegApp_H2hh350_all.root"
 
-    iFileBkg1 = TFile.Open("/scratch/zmao/relaxed_regression/TMVARegApp_tt_eff_all.root")
-    iFileBkg2 = TFile.Open("/scratch/zmao/relaxed_regression/TMVARegApp_ZZ_eff_all.root")
-    iFileBkg3 = TFile.Open("/scratch/zmao/relaxed_regression/TMVARegApp_tt_semi_eff_all.root")
-    iFileBkg4 = TFile.Open("/scratch/zmao/relaxed_regression/TMVARegApp_DY2JetsToLL_eff_all.root")
-    iFileBkg5 = TFile.Open("/scratch/zmao/relaxed_regression/TMVARegApp_DY3JetsToLL_eff_all.root")
-    iFileBkg6 = TFile.Open("/scratch/zmao/relaxed_regression/TMVARegApp_W1JetsToLNu_eff_all.root")
-    iFileBkg7 = TFile.Open("/scratch/zmao/relaxed_regression/TMVARegApp_W2JetsToLNu_eff_all.root")
-    iFileBkg8 = TFile.Open("/scratch/zmao/relaxed_regression/TMVARegApp_W3JetsToLNu_eff_all.root")
+    iFileSig = TFile.Open(location+infname)
 
-#     iFileBkg = TFile.Open("/scratch/zmao/relaxed_regression/trainSample_relaxedsamebTag.root")
+    iFileBkg1 = TFile.Open(location+"TMVARegApp_tt_eff_all_tightoppositebTag.root")
+    iFileBkg2 = TFile.Open(location+"TMVARegApp_ZZ_eff_all_tightoppositebTag.root")
+    iFileBkg3 = TFile.Open(location+"TMVARegApp_tt_semi_eff_all_tightoppositebTag.root")
+    iFileBkg4 = TFile.Open(location+"TMVARegApp_DY2JetsToLL_eff_all_tightoppositebTag.root")
+    iFileBkg5 = TFile.Open(location+"TMVARegApp_DY3JetsToLL_eff_all_tightoppositebTag.root")
+    iFileBkg6 = TFile.Open(location+"TMVARegApp_W1JetsToLNu_eff_all_tightoppositebTag.root")
+    iFileBkg7 = TFile.Open(location+"TMVARegApp_W2JetsToLNu_eff_all_tightoppositebTag.root")
+    iFileBkg8 = TFile.Open(location+"TMVARegApp_W3JetsToLNu_eff_all_tightoppositebTag.root")
 
+    iFileBkg = TFile.Open(location+"trainSample_relaxedsamebTag.root")
 
     sigChain = iFileSig.Get("eventTree")
     bkg1Chain = iFileBkg1.Get("eventTree")
@@ -198,11 +216,11 @@ def main():
     bkg6Chain = iFileBkg6.Get("eventTree")
     bkg7Chain = iFileBkg7.Get("eventTree")
     bkg8Chain = iFileBkg8.Get("eventTree")
-#     bkgChain = iFileBkg.Get("eventTree")
+    bkgChain = iFileBkg.Get("eventTree")
 
     # Global event weights (see below for setting event-wise weights)
     signalWeight     = 1 #0.0159/sigChain.GetEntries() #xs (pb)
-
+    Lumi = 19.0
     tmpHist = iFileBkg1.Get('preselection')
     ttWeight = 26.2/tmpHist.GetBinContent(1)
     tmpHist = iFileBkg2.Get('preselection')
@@ -219,24 +237,31 @@ def main():
     W2JetsToLNu = 1750/tmpHist.GetBinContent(1)
     tmpHist = iFileBkg8.Get('preselection')
     W3JetsToLNu = 519/tmpHist.GetBinContent(1)
+    print "tt:\t\t%.2f" %(bkg1Chain.GetEntries()*ttWeight*0.4*Lumi*1000)
+    print "ZZ:\t\t%.2f" %(bkg2Chain.GetEntries()*ZZWeight*0.4*Lumi*1000)
+    print "tt semi:\t%.2f" %(bkg3Chain.GetEntries()*tt_semiWeight*0.4*Lumi*1000)
+    print "DY2:\t\t%.2f" %(bkg4Chain.GetEntries()*DY2JetsWeight*0.4*Lumi*1000)
+    print "DY3:\t\t%.2f" %(bkg5Chain.GetEntries()*DY3JetsWeight*0.4*Lumi*1000)
+    print "WJ1:\t\t%.2f" %(bkg6Chain.GetEntries()*W1JetsToLNu*0.4*Lumi*1000)
+    print "WJ2:\t\t%.2f" %(bkg7Chain.GetEntries()*W2JetsToLNu*0.4*Lumi*1000)
+    print "WJ3:\t\t%.2f" %(bkg8Chain.GetEntries()*W3JetsToLNu*0.4*Lumi*1000)
+    print "QCD:\t\t%.2f" %(bkgChain.GetEntries()*0.05)
 
-#     print 'weight for bkg: \ttt\tZZ\ttt_semi\tDY\tW2Jets'
-#     print '\t\t\t%s\t%s\t%s\t%s\t%s' %(ttWeight, ZZWeight, tt_semiWeight, DY2JetsWeight, DY3JetsWeight, W1JetsToLNu, W2JetsToLNu, W3JetsToLNu)
 
     # ====== register trees ====================================================
     #
     # the following method is the prefered one:
     # you can add an arbitrary number of signal or background trees
     factory.AddSignalTree(sigChain, signalWeight)
-#     factory.AddBackgroundTree( bkgChain, 1 )
-    factory.AddBackgroundTree( bkg1Chain, ttWeight )
-    factory.AddBackgroundTree( bkg2Chain, ZZWeight )
-    factory.AddBackgroundTree( bkg3Chain, tt_semiWeight )
-    factory.AddBackgroundTree( bkg4Chain, DY2JetsWeight )
-    factory.AddBackgroundTree( bkg5Chain, DY3JetsWeight )
-    factory.AddBackgroundTree( bkg6Chain, W1JetsToLNu )
-    factory.AddBackgroundTree( bkg7Chain, W2JetsToLNu )
-    factory.AddBackgroundTree( bkg8Chain, W3JetsToLNu )
+    factory.AddBackgroundTree( bkgChain, 0.025)
+    factory.AddBackgroundTree( bkg1Chain, ttWeight*Lumi*1000)
+    factory.AddBackgroundTree( bkg2Chain, ZZWeight*Lumi*1000)
+    factory.AddBackgroundTree( bkg3Chain, tt_semiWeight*Lumi*1000)
+    factory.AddBackgroundTree( bkg4Chain, DY2JetsWeight*Lumi*1000)
+    factory.AddBackgroundTree( bkg5Chain, DY3JetsWeight*Lumi*1000)
+#     factory.AddBackgroundTree( bkg6Chain, W1JetsToLNu*Lumi*1000)
+#     factory.AddBackgroundTree( bkg7Chain, W2JetsToLNu*Lumi*1000)
+    factory.AddBackgroundTree( bkg8Chain, W3JetsToLNu*Lumi*1000)
     factory.SetSignalWeightExpression('triggerEff')
     factory.SetBackgroundWeightExpression('triggerEff')
 
@@ -265,7 +290,7 @@ def main():
     # Apply additional cuts on the signal and background sample. 
     # example for cut: mycut = TCut( "abs(var1)<0.5 && abs(var2-0.5)<1" )
     mycutSig = TCut( "iso1<1.5 && iso2<1.5 && CSVJ1 > 0.679 && CSVJ2 > 0.244 && abs(eta1)<2.1 && abs(eta2)<2.1 && charge1 + charge2 == 0" ) 
-    mycutBkg = TCut( "iso1<1.5 && iso2<1.5 && CSVJ1 > 0.679 && CSVJ2 > 0.244 && abs(eta1)<2.1 && abs(eta2)<2.1 && charge1 + charge2 == 0" ) 
+    mycutBkg = TCut( "" ) 
     
     # Here, the relevant variables are copied over in new, slim trees that are
     # used for TMVA training and testing
@@ -308,6 +333,7 @@ def main():
     # Evaluate MVAs
     factory.EvaluateAllMethods()    
     
+
     # Save the output.
     outputFile.Close()
     
@@ -315,10 +341,11 @@ def main():
     print "=== TMVAClassification is done!\n"
     
     # open the GUI for the result macros    
-    gROOT.ProcessLine( "TMVAGui(\"%s\")" % outfname )
-    
+#     gROOT.ProcessLine( "TMVAGui(\"%s\")" % outfname )
+    ChangeWeightName = 'mv /afs/hep.wisc.edu/home/zmao/CMSSW_5_3_15/src/TMVA-v4.2.0/test/weights/TMVAClassification_BDT.weights.xml /afs/hep.wisc.edu/home/zmao/CMSSW_5_3_15/src/TMVA-v4.2.0/test/weights/TMVAClassification_BDT.weights_both_%s.xml' %massPoint
+    os.system(ChangeWeightName)    
     # keep the ROOT thread running
-    gApplication.Run() 
+#     gApplication.Run() 
 
 # ----------------------------------------------------------
 

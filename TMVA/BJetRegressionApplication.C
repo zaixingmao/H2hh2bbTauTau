@@ -27,7 +27,7 @@
 
 using namespace TMVA;
 
-void BJetRegressionApplication( TString myMethodList = "" , TString sampleName = "") 
+void BJetRegressionApplication( TString myMethodList = "" , TString sampleName = "", TString sampleLocation = "") 
 {
    //---------------------------------------------------------------
    // This loads the library
@@ -144,7 +144,8 @@ void BJetRegressionApplication( TString myMethodList = "" , TString sampleName =
    // we'll later on use only the "signal" events for the test in this example.
    
    TFile *input(0);
-   TString fname = "/scratch/zmao/relaxed_regression/"+sampleName;
+   TString fname = sampleLocation;
+   fname += sampleName;
    if (!gSystem->AccessPathName( fname )) {
       input = TFile::Open( fname ); // check if file in local directory exists
    } 
@@ -188,7 +189,8 @@ void BJetRegressionApplication( TString myMethodList = "" , TString sampleName =
    std::cout << "--- Processing: " << theTree->GetEntries() << " events" << std::endl;
    TStopwatch sw;
    sw.Start();
-   ofileName = "/scratch/zmao/relaxed_regression/TMVARegApp_"+sampleName;
+   TString ofileName = sampleLocation;
+   ofileName += "TMVARegApp_"+sampleName;
    TFile *target  = new TFile( ofileName,"RECREATE" );
    TTree *newTree = theTree->CloneTree();
    TBranch *branchJ1PtReg = newTree->Branch("CSVJ1PtReg",&CSVJ1PtReg,"CSVJ1PtReg/F");
