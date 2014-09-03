@@ -116,57 +116,69 @@ def findMatch(iTree, isData):
 op = opts()
 massPoint = op.massPoint
 
-preFix = '/scratch/zmao/relaxed_regression3/%s/ClassApp_both_TMVARegApp_' %massPoint
+preFix0 = '/scratch/zmao/relaxed_regression3/'
+fileList = []
+for massPoint in [260, 300, 350]:
+    preFix = '%s%s/ClassApp_both_TMVARegApp_' %(preFix0, massPoint)
+    fileList.append(('H2hh260', preFix + 'H2hh260_all.root', 'OStightbTag', 14.76))
+    fileList.append(("H2hh300", preFix + "H2hh300_all.root", 'OStightbTag', 15.9))
+    fileList.append(('H2hh350', preFix + 'H2hh350_all.root', 'OStightbTag', 8.57))
+    fileList.append(('WZJetsTo2L2Q', preFix + 'WZJetsTo2L2Q_eff_all.root', 'OStightbTag', 2207))
+    fileList.append(('ZZ', preFix + 'ZZ_eff_all.root', 'OStightbTag', 2500))
+    fileList.append(("tt_full", preFix + "tt_eff_all.root", 'OStightbTag', 26197.5))
+    fileList.append(("tt_semi", preFix + "tt_semi_eff_all.root", 'OStightbTag', 109281))
+#     fileList.append(("tt_MSDecays", preFix + "TTJets_MSDecays_all.root", 'OStightbTag', 249500))#131300))
+    fileList.append(("DY1JetsToLL", preFix + "DY1JetsToLL_eff2_all.root", 'OStightbTag', 561000))
+    fileList.append(('DY2JetsToLL', preFix + 'DY2JetsToLL_eff2_all.root', 'OStightbTag', 181000))
+    fileList.append(('DY3JetsToLL', preFix + 'DY3JetsToLL_eff2_all.root', 'OStightbTag', 51100))
+    fileList.append(('W1JetsToLNu', preFix + 'W1JetsToLNu_eff2_all.root', 'OStightbTag', 5400000))
+    fileList.append(('W2JetsToLNu', preFix + 'W2JetsToLNu_eff2_all.root', 'OStightbTag', 1750000))
+    fileList.append(('W3JetsToLNu', preFix + 'W3JetsToLNu_eff2_all.root', 'OStightbTag', 519000))
+    fileList.append(('dataOSRelax', preFix + 'dataTotal_all.root', 'OSrelaxedbTag', 0.051))
 
-fileList = [('H2hh260', preFix + 'H2hh260_all.root', 'OStightbTag', 14.76),
-            ("H2hh300", preFix + "H2hh300_all.root", 'OStightbTag', 15.9), 
-            ('H2hh350', preFix + 'H2hh350_all.root', 'OStightbTag', 8.57),
-            ('WZJetsTo2L2Q', preFix + 'WZJetsTo2L2Q_eff_all.root', 'OStightbTag', 2207),
-            ('ZZ', preFix + 'ZZ_eff_all.root', 'OStightbTag', 2500),
-            ("tt_full", preFix + "tt_eff_all.root", 'OStightbTag', 26197.5), 
-            ("tt_semi", preFix + "tt_semi_eff_all.root", 'OStightbTag', 109281), 
-            ("tt_MSDecays", preFix + "TTJets_MSDecays_all.root", 'OStightbTag', 131300), 
-            ("DY1JetsToLL", preFix + "DY1JetsToLL_eff2_all.root", 'OStightbTag', 561000), 
-            ('DY2JetsToLL', preFix + 'DY2JetsToLL_eff2_all.root', 'OStightbTag', 181000),
-            ('DY3JetsToLL', preFix + 'DY3JetsToLL_eff2_all.root', 'OStightbTag', 51100),
-            ('W1JetsToLNu', preFix + 'W1JetsToLNu_eff2_all.root', 'OStightbTag', 5400000),
-            ('W2JetsToLNu', preFix + 'W2JetsToLNu_eff2_all.root', 'OStightbTag', 1750000),
-            ('W3JetsToLNu', preFix + 'W3JetsToLNu_eff2_all.root', 'OStightbTag', 519000),
-            ('dataOSRelax', preFix + 'dataTotal_all.root', 'OSrelaxedbTag', 0.062),#0.05),
-            ]
-
-oFileName = 'combined_%s.root' %massPoint
+oFileName = 'combined.root'
 oFile = r.TFile(oFileName, 'RECREATE')
 oTree = r.TTree('eventTree', '')
+
+nSamples = len(fileList)/3
 
 BDT = array('f', [0.])
 mJJReg = array('f', [0.])
 mJJ = array('f', [0.])
 svMass = array('f', [0.])
+BDT_300 = array('f', [0.])
+BDT_350 = array('f', [0.])
+
 BDT_QCD = array('f', [0.])
 BDT_EWK = array('f', [0.])
 
 triggerEff = array('f', [0.])
 sampleName = bytearray(20)
 genMatchName = bytearray(3)
-initEvents = r.TH1F('initEvents', '', len(fileList), 0, len(fileList))
-xs = r.TH1F('xs', '', len(fileList), 0, len(fileList))
-finalEventsWithXS = r.TH1F('finalEventsWithXS', '', len(fileList), 0, len(fileList))
+initEvents = r.TH1F('initEvents', '', nSamples, 0, nSamples)
+xs = r.TH1F('xs', '', nSamples, 0, nSamples)
+finalEventsWithXS = r.TH1F('finalEventsWithXS', '', nSamples, 0, nSamples)
 
-svMassRange = [20, 0, 400]
-mJJRegRange = [15, 50, 200]
-BDTRange = [20, -1.0, 1.0]
+svMassRange = [1, 0, 400] #[20, 0, 400]
+mJJRegRange = [1, 0, 400] #[15, 50, 200]
+BDTRange = [1, -1.0, 1.0]#[20, -1.0, 1.0]
 
 
 scaleSVMass = r.TH1F("scaleSVMass", "", svMassRange[0], svMassRange[1], svMassRange[2])
 scaleSVMassMC = r.TH1F("MC_Data_svMass", "", svMassRange[0], svMassRange[1], svMassRange[2])
 scaleMJJReg = r.TH1F("scaleMJJReg", "", mJJRegRange[0], mJJRegRange[1], mJJRegRange[2])
 scaleMJJRegMC = r.TH1F("MC_Data_mJJReg", "", mJJRegRange[0], mJJRegRange[1], mJJRegRange[2])
-scaleBDT = r.TH1F("scaleBDT", "", BDTRange[0], BDTRange[1], BDTRange[2])
-scaleBDTMC = r.TH1F("MC_Data_BDT", "", BDTRange[0], BDTRange[1], BDTRange[2])
+scaleBDT_260 = r.TH1F("scaleBDT_260", "", BDTRange[0], BDTRange[1], BDTRange[2])
+scaleBDTMC_260 = r.TH1F("MC_Data_BDT_260", "", BDTRange[0], BDTRange[1], BDTRange[2])
+scaleBDT_300 = r.TH1F("scaleBDT_300", "", BDTRange[0], BDTRange[1], BDTRange[2])
+scaleBDTMC_300 = r.TH1F("MC_Data_BDT_300", "", BDTRange[0], BDTRange[1], BDTRange[2])
+scaleBDT_350 = r.TH1F("scaleBDT_350", "", BDTRange[0], BDTRange[1], BDTRange[2])
+scaleBDTMC_350 = r.TH1F("MC_Data_BDT_350", "", BDTRange[0], BDTRange[1], BDTRange[2])
 
+oTree.Branch("BDT_260", BDT, "BDT/F")
+oTree.Branch("BDT_300", BDT_300, "BDT_300/F")
+oTree.Branch("BDT_350", BDT_350, "BDT_350/F")
 
-oTree.Branch("BDT", BDT, "BDT/F")
 oTree.Branch("mJJReg", mJJReg, "mJJReg/F")
 oTree.Branch("mJJ", mJJ, "mJJ/F")
 
@@ -179,8 +191,16 @@ oTree.Branch("triggerEff", triggerEff, "triggerEff/F")
 oTree.Branch("sampleName", sampleName, "sampleName[21]/C")
 oTree.Branch("genMatchName", genMatchName, "genMatchName[21]/C")
 
+for indexFile in range(nSamples):
+    name, ifile, option, xsValue = fileList[indexFile]
+    name_300, ifile_300, option_300, xsValue_300 = fileList[indexFile + nSamples]
+    name_350, ifile_350, option_350, xsValue_350 = fileList[indexFile + 2*nSamples]
 
-for name, ifile, option, xsValue in fileList:
+    iFile_300 = r.TFile(ifile_300)
+    iTree_300 = iFile_300.Get('eventTree')
+    iFile_350 = r.TFile(ifile_350)
+    iTree_350 = iFile_350.Get('eventTree')
+
     iFile = r.TFile(ifile)
     iTree = iFile.Get('eventTree')
     total = iTree.GetEntries()
@@ -194,25 +214,34 @@ for name, ifile, option, xsValue in fileList:
     scale = xsValue/tmpHist.GetBinContent(1)*lumi
 
     if isData:
-        xsValue = xsValue*tmpHist.GetBinContent(1)/lumi
+        xsValue = xsValue*tmpHist.GetBinContent(1)
 
     for i in range(0, total):
         tool.printProcessStatus(iCurrent=i+1, total=total, processName = 'Looping sample [%s]' %name)
         iTree.GetEntry(i)
+        iTree_300.GetEntry(i)
+        iTree_350.GetEntry(i)
         #Fill Histograms
         if passCut(iTree, 'OSrelaxedbTag') and (not ("H2hh" in name)):
             if isData:
                 scaleSVMass.Fill(iTree.svMass.at(0), iTree.triggerEff)
                 scaleMJJReg.Fill(iTree.mJJReg, iTree.triggerEff)
-                scaleBDT.Fill(iTree.BDT_both, iTree.triggerEff)
+                scaleBDT_260.Fill(iTree.BDT_both, iTree.triggerEff)
+                scaleBDT_300.Fill(iTree_300.BDT_both, iTree_300.triggerEff)
+                scaleBDT_350.Fill(iTree_350.BDT_both, iTree_350.triggerEff)
+
             else:
                 scaleSVMassMC.Fill(iTree.svMass.at(0), iTree.triggerEff*scale)
                 scaleMJJRegMC.Fill(iTree.mJJReg, iTree.triggerEff*scale)
-                scaleBDTMC.Fill(iTree.BDT_both, iTree.triggerEff*scale)
+                scaleBDTMC_260.Fill(iTree.BDT_both, iTree.triggerEff*scale)
+                scaleBDTMC_300.Fill(iTree_300.BDT_both, iTree_300.triggerEff*scale)
+                scaleBDTMC_350.Fill(iTree_350.BDT_both, iTree_350.triggerEff*scale)
 
         if not passCut(iTree, option):
             continue
         BDT[0] = iTree.BDT_both
+        BDT_300[0] = iTree_300.BDT_both
+        BDT_350[0] = iTree_350.BDT_both
         mJJReg[0] = iTree.mJJReg
         mJJ[0] = iTree.mJJ
         svMass[0] = iTree.svMass.at(0)
@@ -227,7 +256,7 @@ for name, ifile, option, xsValue in fileList:
 
     xs.Fill(name, xsValue)
     finalEventsWithXS.Fill(name, eventsSaved*xsValue/tmpHist.GetBinContent(1)*lumi)
-    print ' --- Events Saved: %.2f' %eventsSaved
+    print ' --- Events Saved: %.2f' %(eventsSaved*xsValue/tmpHist.GetBinContent(1)*lumi) #eventsSaved
 
 scaleSVMass.Sumw2()
 scaleSVMassMC.Sumw2()
@@ -237,15 +266,23 @@ scaleMJJReg.Sumw2()
 scaleMJJRegMC.Sumw2()
 scaleMJJRegMC.Divide(scaleMJJReg)
 
-scaleBDT.Sumw2()
-scaleBDTMC.Sumw2()
-scaleBDTMC.Divide(scaleBDT)
+scaleBDT_260.Sumw2()
+scaleBDTMC_260.Sumw2()
+scaleBDTMC_260.Divide(scaleBDT_260)
+scaleBDT_300.Sumw2()
+scaleBDTMC_300.Sumw2()
+scaleBDTMC_300.Divide(scaleBDT_300)
+scaleBDT_350.Sumw2()
+scaleBDTMC_350.Sumw2()
+scaleBDTMC_350.Divide(scaleBDT_350)
 
 
 oFile.cd()
 scaleSVMassMC.Write()
 scaleMJJRegMC.Write()
-scaleBDTMC.Write()
+scaleBDTMC_260.Write()
+scaleBDTMC_300.Write()
+scaleBDTMC_350.Write()
 initEvents.Write()
 xs.Write()
 finalEventsWithXS.Write()

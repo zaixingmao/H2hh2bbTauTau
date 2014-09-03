@@ -38,7 +38,7 @@ def passCut(iTree, cut):
         if iTree.iso1.at(0) > 1.5 or iTree.iso2.at(0) > 1.5:
             return False
     if 'relaxed' in cut:
-        if iTree.iso1.at(0) < 1.5 and iTree.iso2.at(0) < 1.5:
+        if not (iTree.iso1.at(0) > 3 and iTree.iso2.at(0) > 3):
             return False
     if 'same' in cut:
         if iTree.charge1.at(0) == -iTree.charge2.at(0):

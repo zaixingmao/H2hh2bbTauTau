@@ -4,6 +4,40 @@ import ROOT as r
 import tool
 from array import array
 from operator import itemgetter
+import math
+
+
+def calcTrigOneTauEff(eta, pt, data = True, fitStart=25):
+        le14_da = {20: (0.898, 44.3, 1.02),
+                  25: (0.866, 43.1, 0.86),
+                  30: (0.839, 42.3, 0.73),
+                  35: (0.846, 42.4, 0.78),
+                  }
+        le14_mc = {20: (0.837, 43.6, 1.09),
+                   25: (0.832, 40.4, 0.80),
+                   30: (0.829, 40.4, 0.74),
+                   35: (0.833, 40.1, 0.86),
+                   }
+        ge16_da = {20: (0.81, 43.6, 1.09),
+                   25: (0.76, 41.8, 0.86),
+                   30: (0.74, 41.2, 0.75),
+                   35: (0.74, 41.2, 0.79),
+                   }
+        ge16_mc = {20: (0.70, 39.7, 0.95),
+                   25: (0.69, 38.6, 0.74),
+                   30: (0.69, 38.7, 0.61),
+                   35: (0.69, 38.8, 0.61),
+                   }
+        le14 = le14_da if data else le14_mc
+        ge16 = ge16_da if data else ge16_mc
+        if abs(eta) < 1.4:
+            d = le14
+        else:
+            d = ge16
+        e, x0, sigma = d[fitStart]
+        y = r.TMath.Erf((pt-x0)/2.0/sigma/math.sqrt(pt))  # https://github.com/rmanzoni/HTT/blob/master/CMGTools/H2TauTau/interface/TriggerEfficiency.h
+        #y = r.TMath.Erf((pt-x0)/sigma/math.sqrt(2.0))
+        return (1+y)*e/2.0
 
 
 varList = [('run', 'RUN', 'I'),
@@ -182,6 +216,10 @@ def makeSyncNtuples(iLocation):
     m_ttbb = array('f', [0.])
     nbtag = array('i', [0])
 
+    trigweight_1 = array('f', [0.])
+    trigweight_2 = array('f', [0.])
+    effweight = array('f', [0.])
+
     oTree.Branch("run", run, "run/I")
     oTree.Branch("lumi", lumi, "lumi/I")
     oTree.Branch("evt", evt, "evt/I")
@@ -279,6 +317,10 @@ def makeSyncNtuples(iLocation):
     oTree.Branch("m_bb", m_bb, "m_bb/F")    
     oTree.Branch("m_ttbb", m_ttbb, "m_ttbb/F")    
 
+    oTree.Branch("trigweight_1", trigweight_1, "trigweight_1/F")    
+    oTree.Branch("trigweight_2", trigweight_2, "trigweight_2/F")    
+    oTree.Branch("effweight", effweight, "effweight/F")    
+
     counter = 0
     lvClass = r.Math.LorentzVector(r.Math.PtEtaPhiM4D('double'))
     b1 = lvClass()
@@ -287,6 +329,8 @@ def makeSyncNtuples(iLocation):
     tau2 = lvClass()
     for iEntry in range(nEntries):
         iTree.GetEntry(iEntry)
+        if iTree.charge1.at(0) == iTree.charge2.at(0):
+            continue
         if iTree.eleTauPt1.size()>0:
             print 'eTauPairFound'
             continue
@@ -299,6 +343,12 @@ def makeSyncNtuples(iLocation):
         if iTree.jpass_2 == 0:
 #             print 'j2Pass Failed'
             continue
+        eff1 = calcTrigOneTauEff(eta=iTree.eta1.at(0), pt=iTree.pt1.at(0), data = False, fitStart=25)
+        eff2 = calcTrigOneTauEff(eta=iTree.eta2.at(0), pt=iTree.pt2.at(0), data = False, fitStart=25)
+        trigweight_1[0] = eff1
+        trigweight_2[0] = eff2        
+        effweight[0] = eff1*eff2
+
         jetsList = [(iTree.J1CSVbtag, iTree.J1Pt, iTree.J1Eta, iTree.J1Phi, iTree.J1Mass),
                     (iTree.J2CSVbtag, iTree.J2Pt, iTree.J2Eta, iTree.J2Phi, iTree.J2Mass),
                     (iTree.J3CSVbtag, iTree.J3Pt, iTree.J3Eta, iTree.J3Phi, iTree.J3Mass),
@@ -315,6 +365,8 @@ def makeSyncNtuples(iLocation):
 #             continue
 #         if abs(jetsList[0][2]) > 2.4 or abs(jetsList[1][2]) > 2.4:
 #             continue
+        if iTree.pt1.at(0)<45 or iTree.pt2.at(0)<45:
+            continue
         if iTree.iso1.at(0)>1.0 or iTree.iso2.at(0)>1.0:
             continue
 
@@ -365,7 +417,7 @@ def makeSyncNtuples(iLocation):
         againstMuonTight2_2[0] = iTree.againstMuonTight2_2
 
         met[0] = iTree.metUnc
-        mvamet[0] = iTree.metOld
+        mvamet[0] = iTree.met.at(0)
         mvametphi[0] = iTree.metOldphi
         mvacov00[0] = iTree.mvacov00
         mvacov01[0] = iTree.mvacov01
@@ -426,4 +478,4 @@ def makeSyncNtuples(iLocation):
     print 'Saved file: %s.root' %oFileName
 
 # makeSyncNtuples('/hdfs/store/user/zmao/H2hh300_NoType1-SUB-TT')
-makeSyncNtuples('/hdfs/store/user/zmao/H2hh300_NoMETSmearing-SUB-TT')
+makeSyncNtuples('/hdfs/store/user/zmao/H2hh300_syncNew-SUB-TT')
