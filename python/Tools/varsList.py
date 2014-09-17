@@ -31,7 +31,7 @@ varsRange = {
 #             'J4CSVbtag':(12, 0, 1.2, 50000, 100, True, True),
 #             'J4Eta': (20, -3.14, 3.14, 10000, 100, True, True),
 #             'J4Pt': (15, 0, 250, 5000, 100, True, True),
-            'svMass': (10, 0, 400, 20, 100, False, True),
+#             'svMass': (10, 0, 400, 20, 100, False, True),
 #             'svPt': (10, 0, 600, 50, 100, False, True),
 #              'mJJ': (15, 80, 150, 30000, 100, True, True),
 #              'mJJReg': (10, 50, 200, 20, 100, False, True),
@@ -56,7 +56,10 @@ varsRange = {
 #             'nTauPairs': (5, 0, 5, 10000, 100, True, True),
 #             'CSVJ1': (10, 0.6, 1.2, 60, 100, False, True),
 #             'CSVJ2': (10, 0.2, 1.2, 30, 100, False, True),
-
+#             'fMass': (20, 150, 550, 20, 100, False, True),
+#             'fMassKinFit': (20, 150, 550, 20, 100, False, True),
+            'byIsolationMVA2raw_1': (20, -1., 1., 20, 100, False, True),
+            'byIsolationMVA2raw_2': (20, -1., 1., 20, 100, False, True),
             }
 
 def angleInPie(absAngle):
@@ -106,6 +109,7 @@ def findVar(iTree, varName):
                 'CSVJ1': iTree.CSVJ1,
                 'CSVJ2': iTree.CSVJ2,
                 'fMass': iTree.fMass,
+                'fMassKinFit': iTree.fMassKinFit,
                 'dPhiMetTau1': iTree.metTau1DPhi,
                 'dPhiMetTau2': iTree.metTau2DPhi,
                 'dPhiMetJet1': iTree.metJ1DPhi,
@@ -121,10 +125,12 @@ def findVar(iTree, varName):
                 'mJJReg': iTree.mJJReg,
 #                 'BDT_EWK': iTree.BDT_EWK,
 #                 'BDT_QCD': iTree.BDT_QCD,
-                'BDT_both': iTree.BDT_both,
+#                 'BDT_both': iTree.BDT_both,
                 'met': iTree.met.at(0),
                 'svPt': iTree.svPt.at(0),
                 'nTauPairs': iTree.pt1.size(),
+                'byIsolationMVA2raw_1': iTree.byIsolationMVA2raw_1,
+                'byIsolationMVA2raw_2': iTree.byIsolationMVA2raw_2,
 
 #                 'J1GenPt': iTree.J1GenPt,
 #                 'J1GenEta': iTree.J1GenEta,

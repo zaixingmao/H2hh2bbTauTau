@@ -116,7 +116,7 @@ def findMatch(iTree, isData):
 op = opts()
 massPoint = op.massPoint
 
-preFix0 = '/scratch/zmao/relaxed_regression3/'
+preFix0 = '/scratch/zmao/relaxed_regression4/'
 fileList = []
 for massPoint in [260, 300, 350]:
     preFix = '%s%s/ClassApp_both_TMVARegApp_' %(preFix0, massPoint)
@@ -146,6 +146,10 @@ BDT = array('f', [0.])
 mJJReg = array('f', [0.])
 mJJ = array('f', [0.])
 svMass = array('f', [0.])
+fMass = array('f', [0.])
+fMassKinFit = array('f', [0.])
+
+
 BDT_300 = array('f', [0.])
 BDT_350 = array('f', [0.])
 
@@ -181,6 +185,8 @@ oTree.Branch("BDT_350", BDT_350, "BDT_350/F")
 
 oTree.Branch("mJJReg", mJJReg, "mJJReg/F")
 oTree.Branch("mJJ", mJJ, "mJJ/F")
+oTree.Branch("fMass", fMass, "fMass/F")
+oTree.Branch("fMassKinFit", fMassKinFit, "fMassKinFit/F")
 
 oTree.Branch("svMass", svMass, "svMass/F")
 
@@ -244,6 +250,8 @@ for indexFile in range(nSamples):
         BDT_350[0] = iTree_350.BDT_both
         mJJReg[0] = iTree.mJJReg
         mJJ[0] = iTree.mJJ
+        fMass[0] = iTree.fMass
+        fMassKinFit[0] = iTree.fMassKinFit
         svMass[0] = iTree.svMass.at(0)
 
 #         BDT_QCD[0] = iTree.BDT_QCD

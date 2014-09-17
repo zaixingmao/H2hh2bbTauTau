@@ -39,16 +39,16 @@ sampleLocations = [
 #                     ('QCD_Pt-150_bEnriched', '/hdfs/store/user/zmao/QCD_Pt-150_bEnriched_newMET-SUB-TT'),
 #                     ('dataA', '/hdfs/store/user/zmao/Tau_Run2012A_newMET2-SUB-TT-data/'),
 #                     ('dataB', '/hdfs/store/user/zmao/TauParked_Run2012B_newMET2-SUB-TT-data/'),
-                    ('dataC', '/hdfs/store/user/zmao/TauParked_Run2012C_newMET3-SUB-TT-data/'),
+#                     ('dataC', '/hdfs/store/user/zmao/TauParked_Run2012C_newMET3-SUB-TT-data/'),
 #                     ('dataD', '/hdfs/store/user/zmao/TauParked_Run2012D_newMET3-SUB-TT-data/'),
-#                     ('dataTotal', '/scratch/zmao/relaxed_regression3/data' ),
+#                     ('dataTotal', '/scratch/zmao/relaxed_regression4/data' ),
 #                     ('QCDtotal', '/scratch/zmao/QCD/qcd' ),
 #                     ('QCDtotal_bEnriched', '/scratch/zmao/QCD/bEnriched' ),
 #                     ('DYJetsToLL_eff', '/hdfs/store/user/zmao/DYJetsToLL_newMET-SUB-TT'),
-#                     ('DY1JetsToLL_eff2', '/hdfs/store/user/zmao/DY1JetsToLL_newMET-SUB-TT'),
-#                     ('DY2JetsToLL_eff2', '/hdfs/store/user/zmao/DY2JetsToLL_newMET-SUB-TT'),
-#                     ('DY3JetsToLL_eff2', '/hdfs/store/user/zmao/DY3JetsToLL_newMET-SUB-TT'),
-#                     ('W1JetsToLNu_eff2', '/hdfs/store/user/zmao/W1JetsToLNu_newMET-SUB-TT'),
+#                     ('DY1JetsToLL_eff2', '/hdfs/store/user/zmao/DY1JetsToLL_newMET2-SUB-TT'),
+#                     ('DY2JetsToLL_eff2', '/hdfs/store/user/zmao/DY2JetsToLL_newMET2-SUB-TT'),
+#                     ('DY3JetsToLL_eff2', '/hdfs/store/user/zmao/DY3JetsToLL_newMET2-SUB-TT'),
+#                     ('W1JetsToLNu_eff2', '/hdfs/store/user/zmao/W1JetsToLNu_newMET2-SUB-TT'),
 #                     ('W2JetsToLNu_eff2', '/hdfs/store/user/zmao/W2JetsToLNu_newMET-SUB-TT'),
 #                     ('W3JetsToLNu_eff2', '/hdfs/store/user/zmao/W3JetsToLNu_newMET-SUB-TT'),
 #                     ('WZJetsTo2L2Q_eff', '/hdfs/store/user/zmao/WZJetsTo2L2Q_newMET-SUB-TT'),
@@ -58,7 +58,7 @@ sampleLocations = [
 #                       ('GluGluToHToTauTau', '/hdfs/store/user/zmao/GluGluToHToTauTau-SUB-TT'),
 #                       ('WH_ZH_TTH_HToTauTau', '/hdfs/store/user/zmao/WH_ZH_TTH_HToTauTau-SUB-TT'),
 #                     ("H2hh300",  "/hdfs/store/user/zmao/H2hh300_syncNew-SUB-TT"),
-
+                    ("H2hh300_newTauID", "/hdfs/store/user/zmao/H2hh300_newTauID-SUB-TT"),
                   ]
 
 

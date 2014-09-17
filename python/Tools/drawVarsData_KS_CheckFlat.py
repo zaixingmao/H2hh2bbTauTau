@@ -179,7 +179,9 @@ def getAccuDist(hist, xMin, xMax, name):
 def getHistos(varName, signalSelection, logY, sigBoost, nbins, useData, max, rangeMin, rangeMax, location, bTag, predict, predictPtBin, region):
     r.gStyle.SetOptStat(0)
 #     preFix = 'ClassApp_both_ClassApp_QCD_ClassApp_EWK_TMVARegApp_'
-    preFix = 'ClassApp_both_TMVARegApp_'
+#     preFix = 'ClassApp_both_TMVARegApp_'
+    preFix = 'TMVARegApp_'
+
 
     fileList = [('ZZ', preFix + 'ZZ_eff_all.root', 2500, 5),
                 ('WZJetsTo2L2Q', preFix + 'WZJetsTo2L2Q_eff_all.root', 2207, 5),

@@ -15,17 +15,29 @@ psfile = 'BDT_Eff_diff_combined.pdf'
 c = r.TCanvas("c","Test", 800, 600)
 c.SetGrid()
 
-fileList = [('16 Variables',r.kGreen), 
+fileList = [# ('16 Variables',r.kGreen), 
     #             ('TMVA%s_10.root' %massPoint,'10 Variables (Highest rank)',r.kGreen),
     #             ('TMVA%s_9.root' %massPoint,'9 Variables (10 Variables drop MEt)',r.kBlue),
     #             ('TMVA%s_8.root' %massPoint,'8 Variables (Highest rank)',r.kRed-7),
     #             ('TMVA%s_6.root' %massPoint,'6 Variables (Highest rank)',r.kBlack),
             ('16 Variables + fullMass', r.kRed),
-            ('%s JJPt' %Vars,r.kOrange),
-            ('%s svPt' %Vars,r.kBlue-7),
-            ('%s fMass' %Vars,r.kBlack),
-            ('%s svPt JJPt' %Vars,r.kMagenta-9),
-            ('svMass mJJReg',r.kGreen+7),
+            ('16 Variables + fullMassKinFit',r.kGreen), 
+            ('svMass svPt dRJJ mJJReg met CSVJ2 fMassKinFit metSvTauPairDPhi',r.kMagenta-9),
+            ('svMass svPt dRJJ mJJReg met CSVJ2 fMass metSvTauPairDPhi',r.kOrange),
+
+#             ('16 Variables + tau1MVA + tau2MVA',r.kBlue),
+#             ('16 Variables + fullMassKinFit + tau1MVA + tau2MVA',r.kOrange),
+#             ('svMass svPt dRJJ mJJReg met tau1MVA tau2MVA CSVJ2 fMassKinFit',r.kMagenta-9),
+#             ('svMass svPt dRJJ mJJReg met tau1MVA tau2MVA CSVJ2 fMassKinFit metSvTauPairDPhi',r.kBlack),
+            ('svMass mJJReg MassKinFit',r.kBlue-7),
+
+#             ('%s met tau1MVA tau2MVA' %Vars,r.kGreen+7),
+
+#             ('%s JJPt' %Vars,r.kOrange),
+#             ('%s svPt' %Vars,r.kBlue-7),
+#             ('%s fMass' %Vars,r.kBlack),
+#             ('%s svPt JJPt' %Vars,r.kMagenta-9),
+#             ('svMass mJJReg',r.kGreen+7),
             ]
 
 sigEff = 0.8
@@ -41,13 +53,26 @@ for iName, iColor in fileList:
     i+=1
 iMassPoint = 0
 for massPoint in massPoints:
-    iFileList = [('TMVA%s_16.root' %massPoint, fileList[0][0], fileList[0][1]), 
-                ('TMVA%s_17.root' %massPoint, fileList[1][0], fileList[1][1]),
-                ('TMVA%s_5.root' %massPoint, fileList[2][0], fileList[2][1]),
-                ('TMVA%s_5_1.root' %massPoint, fileList[3][0], fileList[3][1]),
-                ('TMVA%s_5_2.root' %massPoint, fileList[4][0], fileList[4][1]),
-                ('TMVA%s_6.root' %massPoint, fileList[5][0], fileList[5][1]),
-                ('TMVA%s_2.root' %massPoint, fileList[6][0], fileList[6][1]),
+    iFileList = [# ('TMVA%s_16.root' %massPoint, fileList[0][0], fileList[0][1]), 
+                ('TMVA%s_17.root' %massPoint, fileList[0][0], fileList[0][1]),
+                ('TMVA%s_17_kinFit.root' %massPoint, fileList[1][0], fileList[1][1]),
+                ('TMVA%s_8_kinFit2.root' %massPoint, fileList[2][0], fileList[2][1]),
+                ('TMVA%s_8.root' %massPoint, fileList[3][0], fileList[3][1]),
+
+#                 ('TMVA%s_18_kinFit.root' %massPoint, fileList[2][0], fileList[2][1]),
+#                 ('TMVA%s_19_kinFit.root' %massPoint, fileList[3][0], fileList[3][1]),
+#                 ('TMVA%s_9_kinFit.root' %massPoint, fileList[4][0], fileList[4][1]),
+#                 ('TMVA%s_10_kinFit2.root' %massPoint, fileList[5][0], fileList[5][1]),
+                ('TMVA%s_3_kinFit2.root' %massPoint, fileList[4][0], fileList[4][1]),
+
+#                 ('TMVA%s_7_kinFit.root' %massPoint, fileList[5][0], fileList[5][1]),
+
+# 
+#                 ('TMVA%s_5.root' %massPoint, fileList[2][0], fileList[2][1]),
+#                 ('TMVA%s_5_1.root' %massPoint, fileList[3][0], fileList[3][1]),
+#                 ('TMVA%s_5_2.root' %massPoint, fileList[4][0], fileList[4][1]),
+#                 ('TMVA%s_6.root' %massPoint, fileList[5][0], fileList[5][1]),
+#                 ('TMVA%s_2.root' %massPoint, fileList[6][0], fileList[6][1]),
                 ]
 
     lHistList1=[]
@@ -75,7 +100,7 @@ for massPoint in massPoints:
         if massPoint == '350':
             lHistList3.append((effList_both[i], fileList[i][0]))
 
-    legendPosition = (0.1, 0.2, 0.7, 0.5)
+    legendPosition = (0.1, 0.2, 0.85, 0.5)
     f.close()
 
 
@@ -108,7 +133,7 @@ for massPoint in massPoints:
         bkgEffs[0].SetMaximum(0.15)
         for j in range(1, len(iFileList)):
             bkgEffs[j].Draw('PLsame')
-        l.append(tool.setMyLegend((0.5, 0.6, 0.9, 0.9), lHistList3))
+        l.append(tool.setMyLegend((0.3, 0.6, 0.9, 0.9), lHistList3))
         l[iMassPoint+1].Draw('same')
         c.Update()
         c.Print('%s)' %psfile)
